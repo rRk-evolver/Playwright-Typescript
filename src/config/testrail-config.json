@@ -1,0 +1,6 @@
+{
+  "baseUrl": "https://your-company.testrail.io",
+  "username": "your-email@company.com",
+  "password": "your-testrail-password",
+  "projectId": 1
+}

@@ -1,0 +1,237 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Current Test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "${file}",
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--format",
+        "json:reports/cucumber-report.json"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "playwright:*"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug All Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--format",
+        "json:reports/cucumber-report.json",
+        "--format",
+        "html:reports/cucumber-report.html"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "playwright:*",
+        "PWDEBUG": "1"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Smoke Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--tags",
+        "@smoke",
+        "--format",
+        "json:reports/cucumber-report.json"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "playwright:*",
+        "PWDEBUG": "1"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Regression Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--tags",
+        "@regression",
+        "--format",
+        "json:reports/cucumber-report.json"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "playwright:*",
+        "PWDEBUG": "1"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Test - Chrome",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "${file}",
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--format",
+        "json:reports/cucumber-report.json"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "BROWSER": "chrome",
+        "DEBUG": "playwright:*",
+        "PWDEBUG": "1"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Test - Firefox",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/cucumber-js",
+      "args": [
+        "${file}",
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "src/steps/**/*.ts",
+        "--format",
+        "json:reports/cucumber-report.json"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development",
+        "BROWSER": "firefox",
+        "DEBUG": "playwright:*",
+        "PWDEBUG": "1"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Jest (if used)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand",
+        "--no-cache",
+        "--no-coverage",
+        "${workspaceFolder}/tests"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Step Definition",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/ts-node",
+      "args": ["${file}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Node Script",
+      "type": "node",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Attach to Process",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All Browsers",
+      "configurations": [
+        "Debug Test - Chrome",
+        "Debug Test - Firefox"
+      ],
+      "stopAll": true
+    }
+  ]
+}

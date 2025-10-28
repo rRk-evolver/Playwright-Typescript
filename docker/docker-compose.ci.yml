@@ -1,0 +1,55 @@
+# Docker Compose for CI/CD Environment
+version: '3.8'
+
+services:
+  playwright-tests:
+    extends:
+      file: docker-compose.yml
+      service: playwright-tests
+    build:
+      target: ci-optimized
+    environment:
+      - NODE_ENV=production
+      - HEADLESS=true
+      - BROWSER=${BROWSER:-chromium}
+      - TEST_ENV=${TEST_ENV:-staging}
+      - TAGS=${TAGS:-@smoke}
+      - PARALLEL_WORKERS=${PARALLEL_WORKERS:-4}
+      - SCREENSHOT=failure
+      - VIDEO=failure
+      - TRACE=retain-on-failure
+      - CI=true
+    profiles:
+      - ci
+
+  # Report generator for CI
+  report-generator:
+    extends:
+      file: docker-compose.yml
+      service: report-generator
+    depends_on:
+      - playwright-tests
+    profiles:
+      - ci
+      - reporting
+
+  # Selenium Grid for CI parallel execution
+  selenium-hub:
+    extends:
+      file: docker-compose.yml
+      service: selenium-hub
+    environment:
+      - GRID_MAX_SESSION=8
+      - GRID_BROWSER_TIMEOUT=180
+      - GRID_TIMEOUT=180
+    profiles:
+      - ci
+
+  chrome-node:
+    extends:
+      file: docker-compose.yml
+      service: chrome-node
+    deploy:
+      replicas: 4
+    profiles:
+      - ci

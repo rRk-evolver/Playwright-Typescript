@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-10-28T08:45:58.341Z",
+  "features": {
+    "total": 1
+  },
+  "scenarios": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "successRate": 100
+  },
+  "duration": {
+    "total": 13722355396,
+    "average": 13722355396
+  },
+  "environment": {
+    "browser": "chromium",
+    "baseUrl": "https://the-internet.herokuapp.com",
+    "testEnv": "staging"
+  }
+}

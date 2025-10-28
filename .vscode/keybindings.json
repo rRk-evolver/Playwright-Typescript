@@ -1,0 +1,199 @@
+[
+  // Custom keybindings for Playwright Cucumber Framework
+  
+  // Test Execution
+  {
+    "key": "ctrl+shift+t",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Run All Tests"
+  },
+  {
+    "key": "ctrl+shift+s",
+    "command": "workbench.action.tasks.runTask", 
+    "args": "Run Smoke Tests"
+  },
+  {
+    "key": "ctrl+shift+r",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Run Regression Tests"
+  },
+  {
+    "key": "ctrl+shift+h",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Run Tests - Headed"
+  },
+  {
+    "key": "ctrl+shift+d",
+    "command": "workbench.action.debug.start",
+    "args": "Debug Current Test"
+  },
+  
+  // Report Generation
+  {
+    "key": "ctrl+shift+g",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Generate Report"
+  },
+  {
+    "key": "ctrl+shift+o",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Open Report"
+  },
+  {
+    "key": "ctrl+shift+a",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Open Allure Report"
+  },
+  
+  // Code Quality
+  {
+    "key": "ctrl+shift+l",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Lint Code"
+  },
+  {
+    "key": "ctrl+shift+f",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Fix Lint Issues"
+  },
+  {
+    "key": "ctrl+shift+p",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Format Code"
+  },
+  {
+    "key": "ctrl+shift+c",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Clean Reports"
+  },
+  
+  // Navigation
+  {
+    "key": "ctrl+shift+n",
+    "command": "workbench.action.quickOpen",
+    "args": "src/pages/"
+  },
+  {
+    "key": "ctrl+shift+m",
+    "command": "workbench.action.quickOpen", 
+    "args": "src/steps/"
+  },
+  {
+    "key": "ctrl+shift+e",
+    "command": "workbench.action.quickOpen",
+    "args": "features/"
+  },
+  
+  // Toggle Features
+  {
+    "key": "ctrl+shift+i",
+    "command": "editor.action.toggleInlayHints"
+  },
+  {
+    "key": "ctrl+shift+w",
+    "command": "editor.action.toggleWordWrap"
+  },
+  {
+    "key": "ctrl+shift+v",
+    "command": "workbench.action.toggleDevTools"
+  },
+  
+  // Cucumber Specific
+  {
+    "key": "ctrl+shift+j",
+    "command": "cucumber.goToStepDefinition",
+    "when": "editorTextFocus && editorLangId == 'feature'"
+  },
+  {
+    "key": "ctrl+shift+k",
+    "command": "cucumber.generateStepDefinition",
+    "when": "editorTextFocus && editorLangId == 'feature'"
+  },
+  
+  // Playwright Specific
+  {
+    "key": "ctrl+shift+x",
+    "command": "playwright.runTest",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+z",
+    "command": "playwright.debugTest",
+    "when": "editorTextFocus"
+  },
+  
+  // Multi-cursor and Selection
+  {
+    "key": "ctrl+alt+down",
+    "command": "editor.action.insertCursorBelow",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+up", 
+    "command": "editor.action.insertCursorAbove",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+alt+down",
+    "command": "editor.action.copyLinesDownAction",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+alt+up",
+    "command": "editor.action.copyLinesUpAction",
+    "when": "editorTextFocus"
+  },
+  
+  // File Operations
+  {
+    "key": "ctrl+shift+u",
+    "command": "workbench.action.files.revealActiveFileInWindows"
+  },
+  {
+    "key": "ctrl+shift+y",
+    "command": "workbench.action.files.copyPathOfActiveFile"
+  },
+  
+  // Terminal Operations
+  {
+    "key": "ctrl+shift+`",
+    "command": "workbench.action.terminal.new",
+    "args": {
+      "cwd": "${workspaceFolder}"
+    }
+  },
+  {
+    "key": "ctrl+shift+1",
+    "command": "workbench.action.terminal.focusAtIndex1"
+  },
+  {
+    "key": "ctrl+shift+2",
+    "command": "workbench.action.terminal.focusAtIndex2"
+  },
+  {
+    "key": "ctrl+shift+3",
+    "command": "workbench.action.terminal.focusAtIndex3"
+  },
+  
+  // Search and Replace
+  {
+    "key": "ctrl+shift+alt+f",
+    "command": "workbench.action.findInFiles",
+    "args": {
+      "query": "",
+      "triggerSearch": false,
+      "focusResults": false,
+      "include": "src/**/*.ts,features/**/*.feature"
+    }
+  },
+  
+  // Zen Mode and Focus
+  {
+    "key": "ctrl+k z",
+    "command": "workbench.action.toggleZenMode"
+  },
+  {
+    "key": "ctrl+k f",
+    "command": "workbench.action.toggleFullScreen"
+  }
+]

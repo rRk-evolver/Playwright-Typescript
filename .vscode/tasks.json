@@ -1,0 +1,418 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true
+      },
+      "problemMatcher": ["$tsc"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Install Playwright Browsers",
+      "type": "shell", 
+      "command": "npx",
+      "args": ["playwright", "install"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "dependsOn": "Install Dependencies"
+    },
+    {
+      "label": "Run All Tests",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Run Tests - Headless",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:headless"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests - Headed",
+      "type": "shell", 
+      "command": "npm",
+      "args": ["run", "test:headed"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests - Chrome",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:chrome"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests - Firefox",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:firefox"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests - Safari",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:safari"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests - Parallel",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:parallel"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Smoke Tests",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:tag", "@smoke"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Regression Tests",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test:tag", "@regression"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Generate Report",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "report:generate"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Report",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "report:open"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Generate Report"
+    },
+    {
+      "label": "Generate Allure Report",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "report:allure:generate"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Allure Report",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "report:allure:open"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Generate Allure Report"
+    },
+    {
+      "label": "Lint Code",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "lint"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "Fix Lint Issues",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "lint:fix"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "Format Code",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "format"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Type Check",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "type-check"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Clean Reports",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "clean"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Management - Jira Example",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "jira:example"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Management - TestRail Example",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "testrail:example"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Management - Unified Example",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test-mgmt:example"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker - Build",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "docker:build"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker - Run Tests",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "docker:test"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker - Start Services",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "docker:up:dev"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker - Stop Services",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "docker:down"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker - Serve Reports",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "docker:reports"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

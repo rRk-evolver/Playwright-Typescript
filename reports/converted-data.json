@@ -1,0 +1,82 @@
+[
+  {
+    "username": "tomsmith",
+    "password": "SuperSecretPassword!",
+    "expectedResult": "success",
+    "userType": "admin",
+    "testCategory": "smoke",
+    "description": "Valid admin login credentials"
+  },
+  {
+    "username": "invalid_user",
+    "password": "wrong_password",
+    "expectedResult": "failure",
+    "userType": "regular",
+    "testCategory": "negative",
+    "description": "Invalid username test case"
+  },
+  {
+    "username": "test_user",
+    "password": "test_pass",
+    "expectedResult": "failure",
+    "userType": "guest",
+    "testCategory": "regression",
+    "description": "Invalid password test case"
+  },
+  {
+    "username": "empty_user",
+    "password": "",
+    "expectedResult": "failure",
+    "userType": "none",
+    "testCategory": "negative",
+    "description": "Empty username validation"
+  },
+  {
+    "username": "user_with_space",
+    "password": "space_pass",
+    "expectedResult": "failure",
+    "userType": "regular",
+    "testCategory": "negative",
+    "description": "Username with spaces validation"
+  },
+  {
+    "username": "special_user",
+    "password": "!@#$%^&*()",
+    "expectedResult": "failure",
+    "userType": "regular",
+    "testCategory": "regression",
+    "description": "Special characters in password"
+  },
+  {
+    "username": "long_username_test_user_with_very_long_name",
+    "password": "password",
+    "expectedResult": "failure",
+    "userType": "regular",
+    "testCategory": "performance",
+    "description": "Long username validation"
+  },
+  {
+    "username": "sql_injection_user",
+    "password": "'DROP TABLE users--",
+    "expectedResult": "failure",
+    "userType": "hacker",
+    "testCategory": "security",
+    "description": "SQL injection attempt test"
+  },
+  {
+    "username": "xss_user",
+    "password": "<script>alert('xss')</script>",
+    "expectedResult": "failure",
+    "userType": "hacker",
+    "testCategory": "security",
+    "description": "XSS attack attempt test"
+  },
+  {
+    "username": "normal_user",
+    "password": "normalPass123",
+    "expectedResult": "failure",
+    "userType": "regular",
+    "testCategory": "smoke",
+    "description": "Standard invalid credentials"
+  }
+]

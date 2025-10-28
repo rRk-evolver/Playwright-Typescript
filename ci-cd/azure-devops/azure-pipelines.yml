@@ -1,0 +1,518 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+schedules:
+  - cron: "0 2 * * *"
+    displayName: Daily regression tests
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  - name: browser
+    displayName: 'Browser to test'
+    type: string
+    default: 'chromium'
+    values:
+      - chromium
+      - firefox
+      - webkit
+      - all
+
+  - name: environment
+    displayName: 'Test environment'
+    type: string
+    default: 'staging'
+    values:
+      - staging
+      - production
+      - development
+
+  - name: tags
+    displayName: 'Test tags to run'
+    type: string
+    default: '@smoke'
+
+  - name: parallelWorkers
+    displayName: 'Number of parallel workers'
+    type: string
+    default: '2'
+    values:
+      - '1'
+      - '2'
+      - '4'
+      - '8'
+
+variables:
+  - name: nodeVersion
+    value: '18'
+  - name: playwrightBrowsersPath
+    value: '$(Agent.TempDirectory)/pw-browsers'
+  - name: isMain
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  - name: isPR
+    value: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+stages:
+  - stage: Setup
+    displayName: 'Setup and Validation'
+    jobs:
+      - job: Validate
+        displayName: 'Code Quality & Setup'
+        pool:
+          vmImage: 'ubuntu-latest'
+        
+        steps:
+          - checkout: self
+            displayName: 'Checkout source code'
+            
+          - task: NodeTool@0
+            displayName: 'Setup Node.js'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+              checkLatest: true
+
+          - task: Cache@2
+            displayName: 'Cache npm dependencies'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: '$(npm_config_cache)'
+
+          - script: |
+              npm ci
+            displayName: 'Install dependencies'
+
+          - script: |
+              npm run type-check
+            displayName: 'TypeScript type checking'
+
+          - script: |
+              npm run lint
+            displayName: 'Run ESLint'
+
+          - script: |
+              npm audit --audit-level moderate --json > $(Agent.TempDirectory)/security-audit.json || true
+            displayName: 'Security audit'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish security audit'
+            inputs:
+              pathToPublish: '$(Agent.TempDirectory)/security-audit.json'
+              artifactName: 'security-audit'
+            condition: always()
+
+  - stage: Test
+    displayName: 'Run Playwright Tests'
+    dependsOn: Setup
+    condition: succeeded()
+    
+    jobs:
+      - job: TestMatrix
+        displayName: 'Test Execution'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          matrix:
+            ${{ if eq(parameters.browser, 'all') }}:
+              Chromium:
+                browserName: 'chromium'
+              Firefox:
+                browserName: 'firefox'
+              WebKit:
+                browserName: 'webkit'
+            ${{ else }}:
+              SingleBrowser:
+                browserName: ${{ parameters.browser }}
+        
+        variables:
+          BROWSER: $(browserName)
+          HEADLESS: true
+          TEST_ENV: ${{ parameters.environment }}
+          TAGS: ${{ parameters.tags }}
+          PARALLEL_WORKERS: ${{ parameters.parallelWorkers }}
+          CI: true
+          AZURE_DEVOPS: true
+          BUILD_NUMBER: $(Build.BuildNumber)
+          BUILD_ID: $(Build.BuildId)
+          SCREENSHOT: failure
+          VIDEO: failure
+          TRACE: retain-on-failure
+
+        steps:
+          - checkout: self
+            displayName: 'Checkout source code'
+
+          - task: NodeTool@0
+            displayName: 'Setup Node.js'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+
+          - task: Cache@2
+            displayName: 'Cache npm dependencies'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: '$(npm_config_cache)'
+
+          - task: Cache@2
+            displayName: 'Cache Playwright browsers'
+            inputs:
+              key: 'playwright | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                playwright | "$(Agent.OS)"
+              path: '$(playwrightBrowsersPath)'
+
+          - script: |
+              npm ci
+            displayName: 'Install dependencies'
+
+          - script: |
+              npm run install:browsers
+            displayName: 'Install Playwright browsers'
+            env:
+              PLAYWRIGHT_BROWSERS_PATH: $(playwrightBrowsersPath)
+
+          - script: |
+              cp .env.example .env
+              echo "BROWSER=$(BROWSER)" >> .env
+              echo "HEADLESS=$(HEADLESS)" >> .env
+              echo "TEST_ENV=$(TEST_ENV)" >> .env
+              echo "CI=$(CI)" >> .env
+              echo "AZURE_DEVOPS=$(AZURE_DEVOPS)" >> .env
+              echo "BUILD_NUMBER=$(BUILD_NUMBER)" >> .env
+              echo "BUILD_ID=$(BUILD_ID)" >> .env
+              echo "PARALLEL_WORKERS=$(PARALLEL_WORKERS)" >> .env
+            displayName: 'Setup environment configuration'
+
+          - script: |
+              mkdir -p reports screenshots traces
+            displayName: 'Create directories'
+
+          - script: |
+              npx cucumber-js features/ \
+                --require-module ts-node/register \
+                --require src/steps/**/*.ts \
+                --tags "$(TAGS)" \
+                --format json:reports/cucumber-report-$(browserName).json \
+                --format html:reports/cucumber-report-$(browserName).html \
+                --parallel $(PARALLEL_WORKERS) \
+                --retry 1 \
+                --format-options '{"snippetInterface": "async-await"}'
+            displayName: 'Run Playwright Cucumber tests'
+            env:
+              PLAYWRIGHT_BROWSERS_PATH: $(playwrightBrowsersPath)
+
+          - script: |
+              if [ -f "reports/cucumber-report-$(browserName).json" ]; then
+                mv reports/cucumber-report-$(browserName).json reports/cucumber-report.json
+                npm run report:generate
+                mv reports/index.html reports/index-$(browserName).html
+                mv reports/test-summary.json reports/test-summary-$(browserName).json
+              fi
+            displayName: 'Generate enhanced reports'
+            condition: always()
+
+          - task: PublishTestResults@2
+            displayName: 'Publish test results'
+            inputs:
+              testResultsFormat: 'CucumberJson'
+              testResultsFiles: 'reports/cucumber-report-$(browserName).json'
+              testRunTitle: 'Playwright Tests - $(browserName)'
+              mergeTestResults: true
+            condition: always()
+
+          - task: PublishHtmlReport@1
+            displayName: 'Publish HTML report'
+            inputs:
+              reportDir: 'reports'
+              tabName: 'Test Report - $(browserName)'
+            condition: always()
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish test artifacts'
+            inputs:
+              pathToPublish: 'reports'
+              artifactName: 'test-reports-$(browserName)'
+            condition: always()
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish screenshots'
+            inputs:
+              pathToPublish: 'screenshots'
+              artifactName: 'screenshots-$(browserName)'
+            condition: failed()
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish traces'
+            inputs:
+              pathToPublish: 'traces'
+              artifactName: 'traces-$(browserName)'
+            condition: failed()
+
+          - pwsh: |
+              if (Test-Path "reports/test-summary-$(browserName).json") {
+                $summary = Get-Content "reports/test-summary-$(browserName).json" | ConvertFrom-Json
+                
+                Write-Host "##vso[task.logissue type=warning]Test Summary for $(browserName):"
+                Write-Host "##vso[task.logissue type=warning]Total Scenarios: $($summary.scenarios.total)"
+                Write-Host "##vso[task.logissue type=warning]Passed: $($summary.scenarios.passed)"
+                Write-Host "##vso[task.logissue type=warning]Failed: $($summary.scenarios.failed)"
+                Write-Host "##vso[task.logissue type=warning]Success Rate: $($summary.scenarios.successRate)%"
+                
+                # Set variables for later stages
+                Write-Host "##vso[task.setvariable variable=testsPassed;isOutput=true]$($summary.scenarios.passed)"
+                Write-Host "##vso[task.setvariable variable=testsFailed;isOutput=true]$($summary.scenarios.failed)"
+                Write-Host "##vso[task.setvariable variable=testsTotal;isOutput=true]$($summary.scenarios.total)"
+                Write-Host "##vso[task.setvariable variable=successRate;isOutput=true]$($summary.scenarios.successRate)"
+              }
+            displayName: 'Process test results'
+            condition: always()
+            name: testResults
+
+  - stage: Report
+    displayName: 'Generate Combined Reports'
+    dependsOn: Test
+    condition: always()
+    
+    jobs:
+      - job: CombineReports
+        displayName: 'Merge and publish reports'
+        pool:
+          vmImage: 'ubuntu-latest'
+        
+        steps:
+          - checkout: self
+            displayName: 'Checkout source code'
+
+          - task: NodeTool@0
+            displayName: 'Setup Node.js'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+
+          - script: |
+              npm install multiple-cucumber-html-reporter
+            displayName: 'Install reporting dependencies'
+
+          - task: DownloadBuildArtifacts@1
+            displayName: 'Download all test reports'
+            inputs:
+              buildType: 'current'
+              downloadType: 'specific'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - script: |
+              mkdir -p merged-reports
+              find $(System.ArtifactsDirectory) -name "cucumber-report*.json" -exec cp {} merged-reports/ \;
+              
+              if [ "$(ls -A merged-reports/)" ]; then
+                node -e "
+                const report = require('multiple-cucumber-html-reporter');
+                report.generate({
+                  jsonDir: 'merged-reports',
+                  reportPath: 'merged-reports',
+                  reportName: 'Combined Test Results - Azure DevOps Build $(Build.BuildNumber)',
+                  pageTitle: 'Playwright Cucumber Test Results',
+                  displayDuration: true,
+                  displayReportTime: true,
+                  metadata: {
+                    browser: { name: '${{ parameters.browser }}', version: 'Latest' },
+                    device: 'Azure DevOps Agent',
+                    platform: { name: 'Linux', version: 'Ubuntu' },
+                    buildNumber: '$(Build.BuildNumber)',
+                    buildId: '$(Build.BuildId)',
+                    environment: '${{ parameters.environment }}',
+                    repository: '$(Build.Repository.Name)',
+                    branch: '$(Build.SourceBranchName)',
+                    commit: '$(Build.SourceVersion)'
+                  },
+                  customData: {
+                    title: 'Build Information',
+                    data: [
+                      { label: 'Build Number', value: '$(Build.BuildNumber)' },
+                      { label: 'Build ID', value: '$(Build.BuildId)' },
+                      { label: 'Environment', value: '${{ parameters.environment }}' },
+                      { label: 'Browser', value: '${{ parameters.browser }}' },
+                      { label: 'Tags', value: '${{ parameters.tags }}' },
+                      { label: 'Branch', value: '$(Build.SourceBranchName)' },
+                      { label: 'Commit', value: '$(Build.SourceVersion)' },
+                      { label: 'Triggered By', value: '$(Build.RequestedFor)' }
+                    ]
+                  }
+                });
+                "
+              fi
+            displayName: 'Generate combined report'
+
+          - task: PublishHtmlReport@1
+            displayName: 'Publish combined HTML report'
+            inputs:
+              reportDir: 'merged-reports'
+              tabName: 'Combined Test Results'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish combined report'
+            inputs:
+              pathToPublish: 'merged-reports'
+              artifactName: 'combined-test-report'
+
+  - stage: Notify
+    displayName: 'Notifications and Updates'
+    dependsOn: 
+      - Test
+      - Report
+    condition: always()
+    
+    jobs:
+      - job: SendNotifications
+        displayName: 'Send notifications'
+        pool:
+          vmImage: 'ubuntu-latest'
+        
+        variables:
+          testResults: $[ stageDependencies.Test.TestMatrix.outputs['testResults.successRate'] ]
+        
+        steps:
+          - checkout: none
+
+          - task: InvokeRESTAPI@1
+            displayName: 'Send Slack notification'
+            inputs:
+              connectionType: 'connectedServiceName'
+              serviceConnection: 'slack-webhook'
+              method: 'POST'
+              body: |
+                {
+                  "text": "🎭 Playwright Test Results - Build $(Build.BuildNumber)",
+                  "attachments": [
+                    {
+                      "color": "${{ if eq(variables['Agent.JobStatus'], 'Succeeded') }}good${{ else }}danger${{ endif }}",
+                      "fields": [
+                        {
+                          "title": "Repository",
+                          "value": "$(Build.Repository.Name)",
+                          "short": true
+                        },
+                        {
+                          "title": "Branch",
+                          "value": "$(Build.SourceBranchName)",
+                          "short": true
+                        },
+                        {
+                          "title": "Environment",
+                          "value": "${{ parameters.environment }}",
+                          "short": true
+                        },
+                        {
+                          "title": "Browser",
+                          "value": "${{ parameters.browser }}",
+                          "short": true
+                        },
+                        {
+                          "title": "Build Status",
+                          "value": "$(Agent.JobStatus)",
+                          "short": true
+                        },
+                        {
+                          "title": "Success Rate",
+                          "value": "$(testResults)%",
+                          "short": true
+                        }
+                      ],
+                      "actions": [
+                        {
+                          "type": "button",
+                          "text": "View Build",
+                          "url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+                        }
+                      ]
+                    }
+                  ]
+                }
+            condition: and(always(), ne(variables['SLACK_WEBHOOK_URL'], ''))
+
+          - task: SendEmail@1
+            displayName: 'Send email notification on failure'
+            inputs:
+              To: '$(NOTIFICATION_EMAIL)'
+              Subject: '🚨 Playwright Tests Failed - Build $(Build.BuildNumber)'
+              Body: |
+                The Playwright Cucumber tests have failed in Azure DevOps.
+                
+                Repository: $(Build.Repository.Name)
+                Branch: $(Build.SourceBranchName)
+                Commit: $(Build.SourceVersion)
+                Environment: ${{ parameters.environment }}
+                Browser: ${{ parameters.browser }}
+                
+                View build details: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
+            condition: and(failed(), eq(variables.isMain, true))
+
+      - job: UpdateWorkItems
+        displayName: 'Update work items'
+        pool:
+          vmImage: 'ubuntu-latest'
+        condition: and(always(), eq(variables.isPR, false))
+        
+        steps:
+          - checkout: none
+
+          - task: WorkItemUpdater@2
+            displayName: 'Update linked work items'
+            inputs:
+              workItemType: 'Bug'
+              workItemState: '${{ if eq(variables["Agent.JobStatus"], "Succeeded") }}Resolved${{ else }}Active${{ endif }}'
+              workItemKanbanLane: '${{ if eq(variables["Agent.JobStatus"], "Succeeded") }}Resolved${{ else }}Doing${{ endif }}'
+              workItemComment: |
+                Automated test results for build $(Build.BuildNumber):
+                - Environment: ${{ parameters.environment }}
+                - Browser: ${{ parameters.browser }}
+                - Status: $(Agent.JobStatus)
+                - Build URL: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
+            condition: and(always(), ne(variables['SYSTEM_ACCESSTOKEN'], ''))
+
+      - job: DeployReports
+        displayName: 'Deploy reports to storage'
+        pool:
+          vmImage: 'ubuntu-latest'
+        condition: and(succeeded(), eq(variables.isMain, true))
+        
+        steps:
+          - task: DownloadBuildArtifacts@1
+            displayName: 'Download combined report'
+            inputs:
+              buildType: 'current'
+              artifactName: 'combined-test-report'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - task: AzureFileCopy@4
+            displayName: 'Deploy to Azure Storage'
+            inputs:
+              SourcePath: '$(System.ArtifactsDirectory)/combined-test-report'
+              azureSubscription: 'azure-storage-connection'
+              Destination: 'AzureBlob'
+              storage: 'testreportsstorage'
+              ContainerName: 'reports'
+              BlobPrefix: 'playwright/$(Build.BuildNumber)/'
+            condition: ne(variables['AZURE_STORAGE_CONNECTION'], '')

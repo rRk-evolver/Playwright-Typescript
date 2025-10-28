@@ -1,0 +1,59 @@
+{
+  "databases": {
+    "mysql": {
+      "type": "mysql",
+      "config": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "testuser",
+        "password": "testpass",
+        "database": "test_automation"
+      },
+      "setupRequired": true,
+      "cleanupAfterTests": true,
+      "skipTests": []
+    },
+    "mongodb": {
+      "type": "mongodb",
+      "config": {
+        "host": "localhost",
+        "port": 27017,
+        "database": "test_automation"
+      },
+      "setupRequired": true,
+      "cleanupAfterTests": true,
+      "skipTests": []
+    },
+    "postgresql": {
+      "type": "postgresql",
+      "config": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "testuser",
+        "password": "testpass",
+        "database": "test_automation"
+      },
+      "setupRequired": true,
+      "cleanupAfterTests": true,
+      "skipTests": []
+    },
+    "demo_mysql": {
+      "type": "mysql",
+      "config": {
+        "host": "demo.mysql.com",
+        "port": 3306,
+        "user": "demo_user",
+        "password": "demo_pass",
+        "database": "demo_db"
+      },
+      "setupRequired": false,
+      "cleanupAfterTests": false,
+      "skipTests": ["write", "delete"]
+    }
+  },
+  "defaultDatabase": "mysql",
+  "connectionTimeout": 5000,
+  "queryTimeout": 30000,
+  "retryAttempts": 3,
+  "retryDelay": 1000
+}

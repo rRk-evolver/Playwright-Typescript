@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://your-company.atlassian.net",
+  "username": "your-email@company.com",
+  "apiToken": "your-jira-api-token",
+  "projectKey": "TEST",
+  "testExecutionIssueType": "Test Execution",
+  "testIssueType": "Test"
+}

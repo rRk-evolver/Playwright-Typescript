@@ -1,0 +1,317 @@
+name: Playwright Cucumber Tests
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to run tests'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
+          - all
+      environment:
+        description: 'Test environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+          - development
+      tags:
+        description: 'Test tags to run (e.g., @smoke, @regression)'
+        required: false
+        default: '@smoke'
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
+jobs:
+  test:
+    name: Run Playwright Cucumber Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ github.event.inputs.browser == 'all' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON(format('["{0}"]', github.event.inputs.browser || 'chromium')) }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run install:browsers
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Setup test environment
+        run: |
+          cp .env.example .env
+          echo "BROWSER=${{ matrix.browser }}" >> .env
+          echo "HEADLESS=true" >> .env
+          echo "TEST_ENV=${{ github.event.inputs.environment || 'staging' }}" >> .env
+          echo "CI=true" >> .env
+          echo "GITHUB_ACTIONS=true" >> .env
+          echo "BUILD_NUMBER=${{ github.run_number }}" >> .env
+          echo "GITHUB_SHA=${{ github.sha }}" >> .env
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Run Cucumber tests
+        env:
+          TAGS: ${{ github.event.inputs.tags || '@smoke' }}
+          BROWSER: ${{ matrix.browser }}
+          HEADLESS: true
+          SCREENSHOT: failure
+          VIDEO: failure
+          TRACE: retain-on-failure
+        run: |
+          npx cucumber-js features/ \
+            --require-module ts-node/register \
+            --require src/steps/**/*.ts \
+            --tags "${{ env.TAGS }}" \
+            --format json:reports/cucumber-report-${{ matrix.browser }}.json \
+            --format html:reports/cucumber-report-${{ matrix.browser }}.html \
+            --parallel 2 \
+            --retry 1
+
+      - name: Generate enhanced reports
+        if: always()
+        run: |
+          mv reports/cucumber-report-${{ matrix.browser }}.json reports/cucumber-report.json
+          npm run report:generate
+          mv reports/index.html reports/index-${{ matrix.browser }}.html
+          mv reports/test-summary.json reports/test-summary-${{ matrix.browser }}.json
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: |
+            reports/
+            screenshots/
+            traces/
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.browser }}-${{ github.run_number }}
+          path: screenshots/
+          retention-days: 7
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Playwright Cucumber Tests (${{ matrix.browser }})
+          path: reports/cucumber-report-${{ matrix.browser }}.json
+          reporter: cucumber-json
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'reports/test-summary-${{ matrix.browser }}.json';
+            
+            if (fs.existsSync(path)) {
+              const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const status = summary.scenarios.failed > 0 ? '❌ FAILED' : '✅ PASSED';
+              const successRate = summary.scenarios.successRate;
+              
+              const body = `
+              ## 🎭 Playwright Test Results (${{ matrix.browser }})
+              
+              **Status:** ${status}
+              **Success Rate:** ${successRate}%
+              
+              ### 📊 Summary
+              - **Total Scenarios:** ${summary.scenarios.total}
+              - **Passed:** ${summary.scenarios.passed} ✅
+              - **Failed:** ${summary.scenarios.failed} ❌
+              - **Skipped:** ${summary.scenarios.skipped} ⏭️
+              
+              ### ⏱️ Performance
+              - **Total Duration:** ${Math.round(summary.duration.total / 1000)}s
+              - **Average per Scenario:** ${Math.round(summary.duration.average / 1000)}s
+              
+              ### 🌍 Environment
+              - **Browser:** ${{ matrix.browser }}
+              - **Environment:** ${summary.environment.testEnv}
+              - **Base URL:** ${summary.environment.baseUrl}
+              
+              [View detailed report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+  merge_reports:
+    name: Merge Test Reports
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Install dependencies
+        run: npm install multiple-cucumber-html-reporter
+
+      - name: Merge reports
+        run: |
+          mkdir -p merged-reports
+          find artifacts/ -name "cucumber-report*.json" -exec cp {} merged-reports/ \;
+          
+          node -e "
+          const report = require('multiple-cucumber-html-reporter');
+          report.generate({
+            jsonDir: 'merged-reports',
+            reportPath: 'merged-reports',
+            reportName: 'Combined Test Results - All Browsers',
+            pageTitle: 'Playwright Cucumber Test Results',
+            displayDuration: true,
+            displayReportTime: true,
+            metadata: {
+              browser: { name: 'Multiple', version: 'Latest' },
+              device: 'Desktop',
+              platform: { name: process.platform, version: process.version },
+              buildNumber: '${{ github.run_number }}',
+              gitCommit: '${{ github.sha }}'.substr(0, 7)
+            }
+          });
+          "
+
+      - name: Upload merged reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-test-reports
+          path: merged-reports/
+          retention-days: 30
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: merged-reports
+          destination_dir: reports/${{ github.run_number }}
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [test, merge_reports]
+    if: always()
+    
+    steps:
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.test.result }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: '#test-results'
+          username: 'GitHub Actions'
+          icon_emoji: ':test_tube:'
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ needs.test.result == 'success' && 'good' || 'danger' }}",
+                "title": "Playwright Test Results",
+                "text": "Build #${{ github.run_number }} - ${{ needs.test.result }}",
+                "fields": [
+                  {
+                    "title": "Repository",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "${{ github.ref_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Commit",
+                    "value": "<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}> by ${{ github.actor }}",
+                    "short": false
+                  }
+                ]
+              }]
+            }
+
+      - name: Send email notification
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "🚨 Playwright Tests Failed - Build #${{ github.run_number }}"
+          body: |
+            The Playwright Cucumber tests have failed on the main branch.
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: "GitHub Actions <noreply@github.com>"

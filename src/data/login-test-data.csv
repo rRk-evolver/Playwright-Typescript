@@ -1,0 +1,11 @@
+username,password,expectedResult,userType,testCategory,description
+tomsmith,SuperSecretPassword!,success,admin,smoke,Valid admin login credentials
+invalid_user,wrong_password,failure,regular,negative,Invalid username test case
+test_user,test_pass,failure,guest,regression,Invalid password test case
+empty_user,,failure,none,negative,Empty username validation
+user_with_space, space_pass ,failure,regular,negative,Username with spaces validation
+special_user,!@#$%^&*(),failure,regular,regression,Special characters in password
+long_username_test_user_with_very_long_name,password,failure,regular,performance,Long username validation
+sql_injection_user,'DROP TABLE users--,failure,hacker,security,SQL injection attempt test
+xss_user,<script>alert('xss')</script>,failure,hacker,security,XSS attack attempt test
+normal_user,normalPass123,failure,regular,smoke,Standard invalid credentials

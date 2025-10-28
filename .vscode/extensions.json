@@ -1,0 +1,53 @@
+{
+  "recommendations": [
+    // Playwright Extensions
+    "ms-playwright.playwright",
+    "ortoni.ortoni",
+    "nitayneeman.playwright-snippets",
+    "mskelton.playwright-test-snippets",
+    "ryanrosello-og.playwright-vscode-trace-viewer",
+    
+    // Cucumber/Gherkin Extensions
+    "alexkrechik.cucumberautocomplete",
+    "cucumberopen.cucumber-official",
+    "nguyenngoclong.cypress-cucumber-step-definition-generator",
+    
+    // TypeScript/JavaScript Extensions
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "visualstudioexptteam.vscodeintellicode",
+    "xabikos.javascriptsnippets",
+    "christian-kohler.npm-intellisense",
+    "mike-co.import-sorter",
+    
+    // Testing Extensions
+    "hbenl.vscode-test-explorer",
+    "ms-vscode.test-adapter-converter",
+    
+    // AI & Productivity Extensions
+    "github.copilot",
+    "github.copilot-chat",
+    "tabnine.tabnine-vscode",
+    
+    // Docker Extensions (if using Docker)
+    "ms-azuretools.vscode-docker",
+    
+    // Git Extensions
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+    
+    // Code Quality Extensions
+    "fnando.linter",
+    "trunk.io",
+    
+    // Utility Extensions
+    "formulahendry.code-runner",
+    "rangav.vscode-thunder-client",
+    "ms-vscode.powershell"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "hookyqr.beautify",
+    "ms-vscode.vscode-json"
+  ]
+}

@@ -1,0 +1,48 @@
+# Docker Compose for Development Environment
+version: '3.8'
+
+services:
+  playwright-tests:
+    extends:
+      file: docker-compose.yml
+      service: playwright-tests
+    environment:
+      - NODE_ENV=development
+      - HEADLESS=false
+      - BROWSER=chromium
+      - TEST_ENV=local
+      - TAGS=@smoke or @regression
+      - PARALLEL_WORKERS=1
+      - SCREENSHOT=always
+      - VIDEO=always
+      - TRACE=on
+      - DEBUG=pw:*
+    volumes:
+      - ../:/app
+      - /app/node_modules
+    command: npm run test:dev
+    profiles:
+      - dev
+
+  # Local test database
+  test-database:
+    extends:
+      file: docker-compose.yml
+      service: test-database
+    environment:
+      - POSTGRES_DB=testdb_dev
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_pass
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    profiles:
+      - dev
+      - database
+
+  # Redis for development
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+    profiles:
+      - dev
+      - cache

@@ -1,0 +1,473 @@
+[
+  {
+    "description": "  As a user testing the demo application\n  I want to login to The Internet Herokuapp\n  So that I can access the secure area and verify authentication functionality",
+    "elements": [
+      {
+        "description": "",
+        "id": "user-authentication---the-internet-herokuapp;verify-secure-area-protection",
+        "keyword": "Scenario",
+        "line": 63,
+        "name": "Verify secure area protection",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 567388699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4908461199
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 64,
+            "name": "I try to access secure area directly without login",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:123"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 673507999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 65,
+            "name": "I should be redirected to login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:255"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 33947800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 66,
+            "name": "I should see message indicating authentication required",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:327"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 12655999
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 120986000
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@security",
+            "line": 62
+          },
+          {
+            "name": "@ui",
+            "line": 62
+          },
+          {
+            "name": "@demo",
+            "line": 62
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication---the-internet-herokuapp;multiple-failed-login-attempts",
+        "keyword": "Scenario",
+        "line": 107,
+        "name": "Multiple failed login attempts",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 699805100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4329193499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 108,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 929780399
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 109,
+            "name": "I attempt login with wrong credentials 3 times",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:398"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 5008481299,
+              "error_message": "Error: function timed out, ensure the promise resolves within 5000 milliseconds\n    at Timeout.<anonymous> (C:\\Users\\M.RANJITH\\Documents\\playwirghtFramework\\node_modules\\@cucumber\\cucumber\\src\\time.ts:52:14)\n    at listOnTimeout (node:internal/timers:588:17)\n    at processTimers (node:internal/timers:523:7)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 110,
+            "name": "I should see consistent error messages",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:422"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 111,
+            "name": "I should remain on the login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:213"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 512682300
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@security",
+            "line": 106
+          },
+          {
+            "name": "@ui",
+            "line": 106
+          },
+          {
+            "name": "@demo",
+            "line": 106
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication---the-internet-herokuapp;sql-injection-protection",
+        "keyword": "Scenario",
+        "line": 168,
+        "name": "SQL injection protection",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 549744299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 12677389500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 169,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 955973900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 170,
+            "name": "I login with username \"admin' OR '1'='1\" and password \"password\"",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:132"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 104300600
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 171,
+            "name": "I click the login button",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:142"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 2758675400
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 172,
+            "name": "I should see login error message",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:206"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 34002699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 173,
+            "name": "I should remain on the login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:213"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 11229299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 174,
+            "name": "the application should handle malicious input safely",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:554"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 9530699
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 127388200
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@sql-injection",
+            "line": 167
+          },
+          {
+            "name": "@security",
+            "line": 167
+          },
+          {
+            "name": "@demo",
+            "line": 167
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication---the-internet-herokuapp;xss-protection-in-login-form",
+        "keyword": "Scenario",
+        "line": 177,
+        "name": "XSS protection in login form",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 476482900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7179458800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 178,
+            "name": "I navigate to \"The Internet\" login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 988507099
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 179,
+            "name": "I login with username \"<script>alert('xss')</script>\" and password \"password\"",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:132"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 67158799
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 180,
+            "name": "I click the login button",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:142"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 2788338199
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 181,
+            "name": "I should see login error message",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:206"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 32826900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 182,
+            "name": "I should remain on the login page",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:213"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 13533600
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 183,
+            "name": "no script should be executed",
+            "match": {
+              "location": "src\\steps\\simple-login-steps.ts:568"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1026095900
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 139414400
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@xss",
+            "line": 176
+          },
+          {
+            "name": "@security",
+            "line": 176
+          },
+          {
+            "name": "@demo",
+            "line": 176
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "user-authentication---the-internet-herokuapp",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "User Authentication - The Internet Herokuapp",
+    "tags": [],
+    "uri": "features\\login.feature"
+  }
+]

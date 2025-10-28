@@ -1,0 +1,23 @@
+{
+  "jira": {
+    "enabled": false,
+    "config": {
+      "baseUrl": "https://your-company.atlassian.net",
+      "username": "your-email@company.com",
+      "apiToken": "your-jira-api-token",
+      "projectKey": "TEST",
+      "testExecutionIssueType": "Test Execution",
+      "testIssueType": "Test"
+    }
+  },
+  "testrail": {
+    "enabled": false,
+    "config": {
+      "baseUrl": "https://your-company.testrail.io",
+      "username": "your-email@company.com",
+      "password": "your-testrail-password",
+      "projectId": 1
+    }
+  },
+  "defaultTool": "jira"
+}

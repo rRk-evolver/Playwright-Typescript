@@ -1,0 +1,224 @@
+{
+  "users": {
+    "valid": {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!",
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tomsmith@theinternet.com",
+      "description": "Valid user for The Internet Herokuapp"
+    },
+    "invalid": {
+      "username": "invaliduser",
+      "password": "wrongpassword",
+      "description": "Invalid credentials for testing error scenarios"
+    },
+    "admin": {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!",
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tomsmith@theinternet.com",
+      "role": "administrator",
+      "description": "Admin user (same as valid for demo site)"
+    },
+    "user": {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!",
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tomsmith@theinternet.com",
+      "role": "user",
+      "description": "Regular user for The Internet Herokuapp"
+    },
+    "guest": {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!",
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tomsmith@theinternet.com",
+      "role": "guest",
+      "description": "Guest user for The Internet Herokuapp"
+    },
+    "wrongPassword": {
+      "username": "tomsmith",
+      "password": "wrongpassword",
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tomsmith@theinternet.com",
+      "role": "user",
+      "description": "Valid username with wrong password for testing"
+    },
+    "empty": {
+      "username": "",
+      "password": "",
+      "firstName": "",
+      "lastName": "",
+      "email": "",
+      "role": "user",
+      "description": "Empty credentials for validation testing"
+    }
+  },
+  "testEnvironments": {
+    "development": {
+      "baseUrl": "https://the-internet.herokuapp.com",
+      "loginUrl": "https://the-internet.herokuapp.com/login",
+      "secureUrl": "https://the-internet.herokuapp.com/secure",
+      "apiUrl": "https://reqres.in/api",
+      "description": "The Internet Herokuapp for UI testing"
+    },
+    "staging": {
+      "baseUrl": "https://demo.playwright.dev/todomvc",
+      "loginUrl": "https://the-internet.herokuapp.com/login",
+      "secureUrl": "https://the-internet.herokuapp.com/secure",
+      "apiUrl": "https://reqres.in/api",
+      "description": "Alternative demo sites for staging tests"
+    },
+    "saucedemo": {
+      "baseUrl": "https://saucedemo.com",
+      "loginUrl": "https://saucedemo.com",
+      "apiUrl": "https://reqres.in/api",
+      "credentials": {
+        "standard_user": "secret_sauce",
+        "locked_out_user": "secret_sauce",
+        "problem_user": "secret_sauce"
+      },
+      "description": "SauceDemo alternative testing site"
+    },
+    "demoqa": {
+      "baseUrl": "https://demoqa.com",
+      "loginUrl": "https://demoqa.com/login",
+      "apiUrl": "https://demoqa.com",
+      "description": "DemoQA comprehensive testing site"
+    }
+  },
+  "testData": {
+    "products": [
+      {
+        "id": 1,
+        "name": "Laptop",
+        "price": 999.99,
+        "category": "Electronics",
+        "inStock": true,
+        "description": "High-performance laptop for professionals"
+      },
+      {
+        "id": 2,
+        "name": "Smartphone",
+        "price": 699.99,
+        "category": "Electronics",
+        "inStock": true,
+        "description": "Latest smartphone with advanced features"
+      },
+      {
+        "id": 3,
+        "name": "Book",
+        "price": 29.99,
+        "category": "Books",
+        "inStock": false,
+        "description": "Educational book on software testing"
+      }
+    ],
+    "companies": [
+      {
+        "name": "Acme Corp",
+        "industry": "Technology",
+        "employees": 500,
+        "founded": 2010,
+        "location": "San Francisco, CA"
+      },
+      {
+        "name": "Global Industries",
+        "industry": "Manufacturing",
+        "employees": 2000,
+        "founded": 1995,
+        "location": "Detroit, MI"
+      }
+    ],
+    "addresses": [
+      {
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+      },
+      {
+        "street": "456 Oak Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90210",
+        "country": "USA"
+      }
+    ]
+  },
+  "configuration": {
+    "timeouts": {
+      "short": 5000,
+      "medium": 15000,
+      "long": 30000,
+      "veryLong": 60000
+    },
+    "retries": {
+      "flaky": 3,
+      "api": 2,
+      "ui": 1
+    },
+    "browsers": {
+      "desktop": ["chromium", "firefox", "webkit"],
+      "mobile": ["chromium", "webkit"]
+    },
+    "viewports": {
+      "desktop": { "width": 1280, "height": 720 },
+      "tablet": { "width": 768, "height": 1024 },
+      "mobile": { "width": 375, "height": 667 }
+    }
+  },
+  "apiEndpoints": {
+    "authentication": {
+      "login": "/api/auth/login",
+      "logout": "/api/auth/logout",
+      "refresh": "/api/auth/refresh"
+    },
+    "users": {
+      "list": "/api/users",
+      "create": "/api/users",
+      "update": "/api/users/{id}",
+      "delete": "/api/users/{id}",
+      "profile": "/api/users/profile"
+    },
+    "products": {
+      "list": "/api/products",
+      "create": "/api/products",
+      "update": "/api/products/{id}",
+      "delete": "/api/products/{id}",
+      "search": "/api/products/search"
+    }
+  },
+  "messages": {
+    "success": {
+      "login": "Successfully logged in",
+      "logout": "Successfully logged out",
+      "save": "Data saved successfully",
+      "delete": "Item deleted successfully"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid username or password",
+      "accountLocked": "Account has been locked",
+      "networkError": "Network connection error",
+      "serverError": "Internal server error"
+    },
+    "validation": {
+      "required": "This field is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordWeak": "Password must be at least 8 characters long"
+    }
+  },
+  "sensitiveData": {
+    "note": "This section contains encrypted sensitive data",
+    "creditCard": "4532015112830366",
+    "ssn": "123-45-6789",
+    "apiKey": "sk_test_1234567890abcdef",
+    "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----"
+  }
+}

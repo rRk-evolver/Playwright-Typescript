@@ -1,0 +1,199 @@
+version: '3.8'
+
+services:
+  # Main test runner service
+  playwright-tests:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: development
+    container_name: playwright-cucumber-tests
+    volumes:
+      - ../reports:/app/reports
+      - ../screenshots:/app/screenshots
+      - ../traces:/app/traces
+      - ../logs:/app/logs
+    environment:
+      - NODE_ENV=development
+      - HEADLESS=true
+      - BROWSER=${BROWSER:-chromium}
+      - TEST_ENV=${TEST_ENV:-staging}
+      - TAGS=${TAGS:-@smoke}
+      - PARALLEL_WORKERS=${PARALLEL_WORKERS:-2}
+      - SCREENSHOT=failure
+      - VIDEO=failure
+      - TRACE=retain-on-failure
+      - BASE_URL=${BASE_URL:-https://the-internet.herokuapp.com}
+      - LOGIN_URL=${LOGIN_URL:-https://the-internet.herokuapp.com/login}
+    networks:
+      - test-network
+    command: npm run test
+    depends_on:
+      - selenium-hub
+    shm_size: 2gb
+
+  # Selenium Grid Hub for parallel execution
+  selenium-hub:
+    image: selenium/hub:4.15.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+      - "4442:4442"
+      - "4443:4443"
+    environment:
+      - GRID_MAX_SESSION=4
+      - GRID_BROWSER_TIMEOUT=300
+      - GRID_TIMEOUT=300
+    networks:
+      - test-network
+
+  # Chrome browser nodes
+  chrome-node:
+    image: selenium/node-chrome:4.15.0
+    container_name: chrome-node
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - test-network
+    deploy:
+      replicas: 2
+
+  # Firefox browser nodes
+  firefox-node:
+    image: selenium/node-firefox:4.15.0
+    container_name: firefox-node
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - test-network
+
+  # Edge browser nodes
+  edge-node:
+    image: selenium/node-edge:4.15.0
+    container_name: edge-node
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - test-network
+
+  # Report generator service
+  report-generator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: report-generator
+    container_name: report-generator
+    volumes:
+      - ../reports:/app/reports
+    environment:
+      - NODE_ENV=production
+    networks:
+      - test-network
+    profiles:
+      - reporting
+
+  # Test database for test data
+  test-database:
+    image: postgres:15-alpine
+    container_name: test-database
+    environment:
+      - POSTGRES_DB=testdb
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpass
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../tests/fixtures/database:/docker-entrypoint-initdb.d
+    networks:
+      - test-network
+    profiles:
+      - database
+
+  # Redis for test data caching
+  redis:
+    image: redis:7-alpine
+    container_name: test-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - test-network
+    profiles:
+      - cache
+
+  # NGINX for serving reports
+  nginx-reports:
+    image: nginx:alpine
+    container_name: nginx-reports
+    ports:
+      - "8080:80"
+    volumes:
+      - ../reports:/usr/share/nginx/html/reports:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - test-network
+    profiles:
+      - reporting
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - test-network
+    profiles:
+      - monitoring
+
+  # Grafana for monitoring dashboards (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    networks:
+      - test-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres-data:
+  redis-data:
+  grafana-data:
+
+networks:
+  test-network:
+    driver: bridge

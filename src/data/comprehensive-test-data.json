@@ -1,0 +1,86 @@
+{
+  "loginCredentials": [
+    {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!",
+      "expectedResult": "success",
+      "userType": "admin",
+      "testCategory": "smoke"
+    },
+    {
+      "username": "invalid_user",
+      "password": "wrong_password",
+      "expectedResult": "failure",
+      "userType": "regular",
+      "testCategory": "negative"
+    },
+    {
+      "username": "test_user",
+      "password": "test_pass",
+      "expectedResult": "failure",
+      "userType": "guest",
+      "testCategory": "regression"
+    }
+  ],
+  "productSearches": [
+    {
+      "searchTerm": "laptop",
+      "category": "electronics",
+      "expectedResults": 10,
+      "minPrice": 500,
+      "maxPrice": 2000,
+      "testType": "smoke"
+    },
+    {
+      "searchTerm": "smartphone",
+      "category": "electronics", 
+      "expectedResults": 15,
+      "minPrice": 200,
+      "maxPrice": 1500,
+      "testType": "regression"
+    },
+    {
+      "searchTerm": "book",
+      "category": "literature",
+      "expectedResults": 25,
+      "minPrice": 10,
+      "maxPrice": 100,
+      "testType": "smoke"
+    }
+  ],
+  "paymentMethods": [
+    {
+      "paymentMethod": "creditCard",
+      "cardNumber": "4111111111111111",
+      "cardHolder": "John Doe",
+      "expiryMonth": "12",
+      "expiryYear": "2025",
+      "cvv": "123",
+      "isDefault": true
+    },
+    {
+      "paymentMethod": "debitCard", 
+      "cardNumber": "4532111111111111",
+      "cardHolder": "Jane Smith",
+      "expiryMonth": "06",
+      "expiryYear": "2026",
+      "cvv": "456",
+      "isDefault": false
+    },
+    {
+      "paymentMethod": "paypal",
+      "email": "test@paypal.com",
+      "isDefault": false
+    }
+  ],
+  "testConfiguration": {
+    "environment": "staging",
+    "baseUrl": "https://the-internet.herokuapp.com",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "parallelThreads": 4,
+    "generateReports": true,
+    "enableScreenshots": true,
+    "enableVideoRecording": false
+  }
+}
