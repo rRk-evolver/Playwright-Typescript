@@ -175,24 +175,29 @@ Then("I should see the secure area page", async function (this: WorldContext) {
   );
 });
 
-Then('I should remain on the secure area page', async function (this: WorldContext) {
-  console.log("Verifying user remains on secure area page");
-  // Wait a bit for any potential redirects to complete
-  await this.page.waitForTimeout(3000);
-  
-  // Check if we're still on secure area (some sites might redirect back to login)
-  const currentUrl = this.page.url();
-  console.log(`Current URL after back button: ${currentUrl}`);
-  
-  if (currentUrl.includes('/secure')) {
-    await expect(this.page.locator("h2")).toContainText("Secure Area");
-    console.log("✓ User remained on secure area page");
-  } else {
-    // If redirected to login, that's also a valid behavior for some applications
-    console.log("User was redirected to login page - this is acceptable behavior");
-    await expect(this.page).toHaveURL(/.*\/login$/);
+Then(
+  "I should remain on the secure area page",
+  async function (this: WorldContext) {
+    console.log("Verifying user remains on secure area page");
+    // Wait a bit for any potential redirects to complete
+    await this.page.waitForTimeout(3000);
+
+    // Check if we're still on secure area (some sites might redirect back to login)
+    const currentUrl = this.page.url();
+    console.log(`Current URL after back button: ${currentUrl}`);
+
+    if (currentUrl.includes("/secure")) {
+      await expect(this.page.locator("h2")).toContainText("Secure Area");
+      console.log("✓ User remained on secure area page");
+    } else {
+      // If redirected to login, that's also a valid behavior for some applications
+      console.log(
+        "User was redirected to login page - this is acceptable behavior"
+      );
+      await expect(this.page).toHaveURL(/.*\/login$/);
+    }
   }
-});
+);
 
 Then(
   "I should see welcome message {string}",
@@ -514,7 +519,9 @@ Then(
     // Check that elements are properly spaced for touch
     const usernameBox = await this.page.locator("#username").boundingBox();
     const passwordBox = await this.page.locator("#password").boundingBox();
-    const buttonBox = await this.page.locator('button[type="submit"]').boundingBox();
+    const buttonBox = await this.page
+      .locator('button[type="submit"]')
+      .boundingBox();
     expect(usernameBox).toBeTruthy();
     expect(passwordBox).toBeTruthy();
     expect(buttonBox).toBeTruthy();
@@ -611,8 +618,8 @@ Then(
 
     // Values may be empty if the form rejects very long input, or truncated, or fully accepted
     // The important thing is that the page doesn't crash and remains functional
-    expect(typeof usernameValue).toBe('string');
-    expect(typeof passwordValue).toBe('string');
+    expect(typeof usernameValue).toBe("string");
+    expect(typeof passwordValue).toBe("string");
 
     // Page should still be responsive
     await expect(this.page.locator('button[type="submit"]')).toBeVisible();
@@ -629,7 +636,9 @@ Then(
       const flashMessage = await this.page.locator("#flash").textContent();
       if (flashMessage) {
         // Should show normal validation error, not system error
-        expect(flashMessage).toMatch(/invalid|incorrect|wrong|Your username is invalid/i);
+        expect(flashMessage).toMatch(
+          /invalid|incorrect|wrong|Your username is invalid/i
+        );
       }
     } catch (error) {
       // If no flash message appears, that's also acceptable for this demo site

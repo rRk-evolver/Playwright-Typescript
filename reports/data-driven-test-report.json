@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "passRate": "100.0%"
+  },
+  "results": [
+    {
+      "testCase": "smoke",
+      "expected": "success",
+      "actual": "success",
+      "passed": true,
+      "description": "Valid admin login credentials"
+    },
+    {
+      "testCase": "negative",
+      "expected": "failure",
+      "actual": "failure",
+      "passed": true,
+      "description": "Invalid username test case"
+    },
+    {
+      "testCase": "regression",
+      "expected": "failure",
+      "actual": "failure",
+      "passed": true,
+      "description": "Invalid password test case"
+    }
+  ]
+}

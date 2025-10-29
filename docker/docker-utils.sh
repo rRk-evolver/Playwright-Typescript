@@ -144,19 +144,19 @@ case $COMMAND in
         docker-compose $COMPOSE_FILES build
         log_success "Build completed"
         ;;
-    
+
     up)
         log_info "Starting services for environment: $ENV"
         docker-compose $COMPOSE_FILES $PROFILE_FLAG up -d
         log_success "Services started"
         ;;
-    
+
     down)
         log_info "Stopping services"
         docker-compose $COMPOSE_FILES down
         log_success "Services stopped"
         ;;
-    
+
     test)
         log_info "Running tests with browser: $BROWSER, tags: $TAGS, parallel: $PARALLEL"
         docker-compose $COMPOSE_FILES run --rm \
@@ -166,46 +166,46 @@ case $COMMAND in
             playwright-tests
         log_success "Tests completed"
         ;;
-    
+
     logs)
         log_info "Showing container logs"
         docker-compose $COMPOSE_FILES logs -f
         ;;
-    
+
     clean)
         log_warning "Cleaning up containers, images, and volumes"
         docker-compose $COMPOSE_FILES down -v --remove-orphans
         docker system prune -f
         log_success "Cleanup completed"
         ;;
-    
+
     shell)
         log_info "Accessing container shell"
         docker-compose $COMPOSE_FILES exec playwright-tests /bin/bash
         ;;
-    
+
     status)
         log_info "Container status"
         docker-compose $COMPOSE_FILES ps
         ;;
-    
+
     health)
         log_info "Checking container health"
         docker-compose $COMPOSE_FILES exec playwright-tests npm run health-check
         ;;
-    
+
     reports)
         log_info "Starting report server"
         docker-compose -f $COMPOSE_FILE --profile reporting up -d nginx-reports
         log_success "Reports available at http://localhost:8080"
         ;;
-    
+
     "")
         log_error "No command specified"
         show_help
         exit 1
         ;;
-    
+
     *)
         log_error "Unknown command: $COMMAND"
         show_help

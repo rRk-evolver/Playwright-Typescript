@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-10-29T06:10:32.559Z",
+  "testUrl": "https://the-internet.herokuapp.com/login",
+  "testUser": "tom***ith",
+  "testResults": {
+    "login": "PASSED",
+    "secureAreaAccess": "PASSED",
+    "logout": "PASSED",
+    "screenshot": "C:\\Users\\M.RANJITH\\Documents\\playwirghtFramework\\reports\\simple-test-screenshot.png"
+  },
+  "duration": "~10 seconds",
+  "browser": "Chromium"
+}

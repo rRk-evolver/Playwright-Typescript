@@ -21,7 +21,7 @@
     },
     {
       "label": "Install Playwright Browsers",
-      "type": "shell", 
+      "type": "shell",
       "command": "npx",
       "args": ["playwright", "install"],
       "group": "build",
@@ -71,7 +71,7 @@
     },
     {
       "label": "Run Tests - Headed",
-      "type": "shell", 
+      "type": "shell",
       "command": "npm",
       "args": ["run", "test:headed"],
       "group": "test",

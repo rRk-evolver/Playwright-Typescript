@@ -1,8 +1,10 @@
-import * as XLSX from 'xlsx';
-import * as path from 'path';
 import * as fs from 'fs';
-import { Logger } from '../logger';
+import * as path from 'path';
+import * as XLSX from 'xlsx';
+
 import { DataEncryption } from '../encryption/data-encryption';
+import { Logger } from '../logger';
+
 
 const logger = Logger.getInstance();
 
@@ -24,7 +26,7 @@ export class ExcelDataHandler {
    * @param options - Additional options
    */
   async readExcelFile(
-    filePath: string, 
+    filePath: string,
     sheetName?: string,
     options: {
       hasHeaders?: boolean;
@@ -35,32 +37,38 @@ export class ExcelDataHandler {
     } = {}
   ): Promise<any[]> {
     try {
-      const { hasHeaders = true, range, skipEmptyRows = true, decrypt = false, decryptColumns = [] } = options;
-      
+      const {
+        hasHeaders = true,
+        range,
+        skipEmptyRows = true,
+        decrypt = false,
+        decryptColumns = [],
+      } = options;
+
       logger.info(`Reading Excel file: ${filePath}`);
-      
+
       if (!fs.existsSync(filePath)) {
         throw new Error(`Excel file not found: ${filePath}`);
       }
 
       // Read the workbook
       const workbook = XLSX.readFile(filePath);
-      
+
       // Get sheet name
       const targetSheetName = sheetName || workbook.SheetNames[0];
-      
+
       if (!targetSheetName || !workbook.Sheets[targetSheetName]) {
         throw new Error(`Sheet '${targetSheetName}' not found in Excel file`);
       }
 
       const worksheet = workbook.Sheets[targetSheetName];
-      
+
       // Convert to JSON
       const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-        header: hasHeaders ? 1 : 'A',
+        header: hasHeaders ? 1 : "A",
         range: range,
         blankrows: !skipEmptyRows,
-        defval: ''
+        defval: "",
       });
 
       // Decrypt specified columns if needed
@@ -71,7 +79,10 @@ export class ExcelDataHandler {
               try {
                 row[column] = await this.encryption.decrypt(row[column]);
               } catch (error) {
-                logger.warn(`Failed to decrypt column '${column}' in row:`, error);
+                logger.warn(
+                  `Failed to decrypt column '${column}' in row:`,
+                  error
+                );
               }
             }
           }
@@ -94,9 +105,9 @@ export class ExcelDataHandler {
    * @param options - Additional options
    */
   async writeExcelFile(
-    data: any[], 
-    filePath: string, 
-    sheetName: string = 'Sheet1',
+    data: any[],
+    filePath: string,
+    sheetName: string = "Sheet1",
     options: {
       append?: boolean;
       encrypt?: boolean;
@@ -105,10 +116,15 @@ export class ExcelDataHandler {
     } = {}
   ): Promise<void> {
     try {
-      const { append = false, encrypt = false, encryptColumns = [], password } = options;
-      
+      const {
+        append = false,
+        encrypt = false,
+        encryptColumns = [],
+        password,
+      } = options;
+
       logger.info(`Writing data to Excel file: ${filePath}`);
-      
+
       // Ensure directory exists
       const dir = path.dirname(filePath);
       if (!fs.existsSync(dir)) {
@@ -116,7 +132,7 @@ export class ExcelDataHandler {
       }
 
       let workbook: XLSX.WorkBook;
-      
+
       if (append && fs.existsSync(filePath)) {
         // Read existing workbook
         workbook = XLSX.readFile(filePath);
@@ -134,9 +150,14 @@ export class ExcelDataHandler {
             for (const column of encryptColumns) {
               if (newRow[column]) {
                 try {
-                  newRow[column] = await this.encryption.encrypt(newRow[column]);
+                  newRow[column] = await this.encryption.encrypt(
+                    newRow[column]
+                  );
                 } catch (error) {
-                  logger.warn(`Failed to encrypt column '${column}' in row:`, error);
+                  logger.warn(
+                    `Failed to encrypt column '${column}' in row:`,
+                    error
+                  );
                 }
               }
             }
@@ -147,14 +168,14 @@ export class ExcelDataHandler {
 
       // Create worksheet
       const worksheet = XLSX.utils.json_to_sheet(processedData);
-      
+
       // Add or update worksheet
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
       // Write workbook
       const writeOptions: XLSX.WritingOptions = {
-        bookType: 'xlsx',
-        type: 'file'
+        bookType: "xlsx",
+        type: "file",
       };
 
       if (password) {
@@ -162,8 +183,10 @@ export class ExcelDataHandler {
       }
 
       XLSX.writeFile(workbook, filePath, writeOptions);
-      
-      logger.info(`Successfully wrote ${processedData.length} rows to Excel file`);
+
+      logger.info(
+        `Successfully wrote ${processedData.length} rows to Excel file`
+      );
     } catch (error) {
       logger.error(`Failed to write Excel file: ${filePath}`, error);
       throw error;
@@ -176,27 +199,34 @@ export class ExcelDataHandler {
    * @param cellAddress - Cell address (e.g., 'A1', 'B2')
    * @param sheetName - Name of the sheet
    */
-  async readCell(filePath: string, cellAddress: string, sheetName?: string): Promise<any> {
+  async readCell(
+    filePath: string,
+    cellAddress: string,
+    sheetName?: string
+  ): Promise<any> {
     try {
       logger.debug(`Reading cell ${cellAddress} from Excel file: ${filePath}`);
-      
+
       const workbook = XLSX.readFile(filePath);
       const targetSheetName = sheetName || workbook.SheetNames[0];
       if (!targetSheetName) {
-        throw new Error('No sheets found in Excel file');
+        throw new Error("No sheets found in Excel file");
       }
       const worksheet = workbook.Sheets[targetSheetName];
       if (!worksheet) {
         throw new Error(`Worksheet '${targetSheetName}' not found`);
       }
-      
+
       const cell = worksheet[cellAddress];
       const value = cell ? cell.v : null;
-      
+
       logger.debug(`Cell ${cellAddress} value: ${value}`);
       return value;
     } catch (error) {
-      logger.error(`Failed to read cell ${cellAddress} from Excel file: ${filePath}`, error);
+      logger.error(
+        `Failed to read cell ${cellAddress} from Excel file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -208,38 +238,52 @@ export class ExcelDataHandler {
    * @param value - Value to write
    * @param sheetName - Name of the sheet
    */
-  async writeCell(filePath: string, cellAddress: string, value: any, sheetName?: string): Promise<void> {
+  async writeCell(
+    filePath: string,
+    cellAddress: string,
+    value: any,
+    sheetName?: string
+  ): Promise<void> {
     try {
-      logger.debug(`Writing value '${value}' to cell ${cellAddress} in Excel file: ${filePath}`);
-      
+      logger.debug(
+        `Writing value '${value}' to cell ${cellAddress} in Excel file: ${filePath}`
+      );
+
       let workbook: XLSX.WorkBook;
-      
+
       if (fs.existsSync(filePath)) {
         workbook = XLSX.readFile(filePath);
       } else {
         workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.aoa_to_sheet([[]]);
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName || 'Sheet1');
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          sheetName || "Sheet1"
+        );
       }
-      
+
       const targetSheetName = sheetName || workbook.SheetNames[0];
       if (!targetSheetName) {
-        throw new Error('No sheets found in Excel file');
+        throw new Error("No sheets found in Excel file");
       }
       const worksheet = workbook.Sheets[targetSheetName];
       if (!worksheet) {
         throw new Error(`Worksheet '${targetSheetName}' not found`);
       }
-      
+
       // Set cell value
       XLSX.utils.sheet_add_aoa(worksheet, [[value]], { origin: cellAddress });
-      
+
       // Write workbook
       XLSX.writeFile(workbook, filePath);
-      
+
       logger.debug(`Successfully wrote value to cell ${cellAddress}`);
     } catch (error) {
-      logger.error(`Failed to write cell ${cellAddress} in Excel file: ${filePath}`, error);
+      logger.error(
+        `Failed to write cell ${cellAddress} in Excel file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -251,14 +295,19 @@ export class ExcelDataHandler {
   async getSheetNames(filePath: string): Promise<string[]> {
     try {
       logger.debug(`Getting sheet names from Excel file: ${filePath}`);
-      
+
       const workbook = XLSX.readFile(filePath);
       const sheetNames = workbook.SheetNames;
-      
-      logger.debug(`Found ${sheetNames.length} sheets: ${sheetNames.join(', ')}`);
+
+      logger.debug(
+        `Found ${sheetNames.length} sheets: ${sheetNames.join(", ")}`
+      );
       return sheetNames;
     } catch (error) {
-      logger.error(`Failed to get sheet names from Excel file: ${filePath}`, error);
+      logger.error(
+        `Failed to get sheet names from Excel file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -269,37 +318,45 @@ export class ExcelDataHandler {
    * @param sheetName - Name of new sheet
    * @param data - Data for the new sheet (optional)
    */
-  async addSheet(filePath: string, sheetName: string, data?: any[]): Promise<void> {
+  async addSheet(
+    filePath: string,
+    sheetName: string,
+    data?: any[]
+  ): Promise<void> {
     try {
       logger.info(`Adding sheet '${sheetName}' to Excel file: ${filePath}`);
-      
+
       let workbook: XLSX.WorkBook;
-      
+
       if (fs.existsSync(filePath)) {
         workbook = XLSX.readFile(filePath);
       } else {
         workbook = XLSX.utils.book_new();
       }
-      
+
       // Check if sheet already exists
       if (workbook.Sheets[sheetName]) {
         logger.warn(`Sheet '${sheetName}' already exists, will be overwritten`);
       }
-      
+
       // Create worksheet
-      const worksheet = data && data.length > 0 
-        ? XLSX.utils.json_to_sheet(data)
-        : XLSX.utils.aoa_to_sheet([[]]);
-      
+      const worksheet =
+        data && data.length > 0
+          ? XLSX.utils.json_to_sheet(data)
+          : XLSX.utils.aoa_to_sheet([[]]);
+
       // Add sheet to workbook
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-      
+
       // Write workbook
       XLSX.writeFile(workbook, filePath);
-      
+
       logger.info(`Successfully added sheet '${sheetName}' to Excel file`);
     } catch (error) {
-      logger.error(`Failed to add sheet '${sheetName}' to Excel file: ${filePath}`, error);
+      logger.error(
+        `Failed to add sheet '${sheetName}' to Excel file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -311,27 +368,29 @@ export class ExcelDataHandler {
    * @param sheetName - Name of the sheet
    */
   async filterData(
-    filePath: string, 
-    filterCriteria: Record<string, any>, 
+    filePath: string,
+    filterCriteria: Record<string, any>,
     sheetName?: string
   ): Promise<any[]> {
     try {
       logger.info(`Filtering data from Excel file: ${filePath}`);
-      
+
       const data = await this.readExcelFile(filePath, sheetName);
-      
-      const filteredData = data.filter(row => {
+
+      const filteredData = data.filter((row) => {
         return Object.entries(filterCriteria).every(([key, value]) => {
-          if (typeof value === 'string' && value.includes('*')) {
+          if (typeof value === "string" && value.includes("*")) {
             // Support wildcard matching
-            const regex = new RegExp(value.replace(/\*/g, '.*'), 'i');
+            const regex = new RegExp(value.replace(/\*/g, ".*"), "i");
             return regex.test(row[key]);
           }
           return row[key] === value;
         });
       });
-      
-      logger.info(`Filtered ${filteredData.length} rows out of ${data.length} total rows`);
+
+      logger.info(
+        `Filtered ${filteredData.length} rows out of ${data.length} total rows`
+      );
       return filteredData;
     } catch (error) {
       logger.error(`Failed to filter data from Excel file: ${filePath}`, error);
@@ -346,30 +405,33 @@ export class ExcelDataHandler {
    * @param filterCriteria - Optional filter criteria
    */
   async getRandomRow(
-    filePath: string, 
-    sheetName?: string, 
+    filePath: string,
+    sheetName?: string,
     filterCriteria?: Record<string, any>
   ): Promise<any> {
     try {
       logger.debug(`Getting random row from Excel file: ${filePath}`);
-      
+
       let data = await this.readExcelFile(filePath, sheetName);
-      
+
       if (filterCriteria) {
         data = await this.filterData(filePath, filterCriteria, sheetName);
       }
-      
+
       if (data.length === 0) {
-        throw new Error('No data available to select random row');
+        throw new Error("No data available to select random row");
       }
-      
+
       const randomIndex = Math.floor(Math.random() * data.length);
       const randomRow = data[randomIndex];
-      
+
       logger.debug(`Selected random row at index ${randomIndex}`);
       return randomRow;
     } catch (error) {
-      logger.error(`Failed to get random row from Excel file: ${filePath}`, error);
+      logger.error(
+        `Failed to get random row from Excel file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -381,30 +443,49 @@ export class ExcelDataHandler {
    * @param sheetName - Name of the sheet
    */
   async validateStructure(
-    filePath: string, 
-    expectedColumns: string[], 
+    filePath: string,
+    expectedColumns: string[],
     sheetName?: string
-  ): Promise<{ valid: boolean; missingColumns: string[]; extraColumns: string[] }> {
+  ): Promise<{
+    valid: boolean;
+    missingColumns: string[];
+    extraColumns: string[];
+  }> {
     try {
       logger.debug(`Validating Excel file structure: ${filePath}`);
-      
-      const data = await this.readExcelFile(filePath, sheetName, { hasHeaders: true });
-      
+
+      const data = await this.readExcelFile(filePath, sheetName, {
+        hasHeaders: true,
+      });
+
       if (data.length === 0) {
-        return { valid: false, missingColumns: expectedColumns, extraColumns: [] };
+        return {
+          valid: false,
+          missingColumns: expectedColumns,
+          extraColumns: [],
+        };
       }
-      
+
       const actualColumns = Object.keys(data[0]);
-      const missingColumns = expectedColumns.filter(col => !actualColumns.includes(col));
-      const extraColumns = actualColumns.filter(col => !expectedColumns.includes(col));
-      
+      const missingColumns = expectedColumns.filter(
+        (col) => !actualColumns.includes(col)
+      );
+      const extraColumns = actualColumns.filter(
+        (col) => !expectedColumns.includes(col)
+      );
+
       const valid = missingColumns.length === 0;
-      
-      logger.debug(`Structure validation - Valid: ${valid}, Missing: ${missingColumns.length}, Extra: ${extraColumns.length}`);
-      
+
+      logger.debug(
+        `Structure validation - Valid: ${valid}, Missing: ${missingColumns.length}, Extra: ${extraColumns.length}`
+      );
+
       return { valid, missingColumns, extraColumns };
     } catch (error) {
-      logger.error(`Failed to validate Excel file structure: ${filePath}`, error);
+      logger.error(
+        `Failed to validate Excel file structure: ${filePath}`,
+        error
+      );
       throw error;
     }
   }

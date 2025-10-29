@@ -1,6 +1,6 @@
-const report = require('multiple-cucumber-html-reporter');
-const fs = require('fs');
-const path = require('path');
+const report = require("multiple-cucumber-html-reporter");
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Enhanced Cucumber HTML Reporter
@@ -8,9 +8,9 @@ const path = require('path');
  */
 class EnhancedReporter {
   constructor() {
-    this.reportsDir = 'reports';
-    this.screenshotsDir = 'screenshots';
-    this.cucumberJsonPath = path.join(this.reportsDir, 'cucumber-report.json');
+    this.reportsDir = "reports";
+    this.screenshotsDir = "screenshots";
+    this.cucumberJsonPath = path.join(this.reportsDir, "cucumber-report.json");
   }
 
   /**
@@ -18,8 +18,8 @@ class EnhancedReporter {
    */
   async generateReport() {
     try {
-      console.log('🎨 Generating enhanced HTML report...');
-      
+      console.log("🎨 Generating enhanced HTML report...");
+
       // Ensure reports directory exists
       if (!fs.existsSync(this.reportsDir)) {
         fs.mkdirSync(this.reportsDir, { recursive: true });
@@ -27,68 +27,90 @@ class EnhancedReporter {
 
       // Check if cucumber JSON report exists
       if (!fs.existsSync(this.cucumberJsonPath)) {
-        console.error('❌ Cucumber JSON report not found. Please run tests first.');
+        console.error(
+          "❌ Cucumber JSON report not found. Please run tests first."
+        );
         return;
       }
 
       // Read and process the JSON report
-      const reportData = JSON.parse(fs.readFileSync(this.cucumberJsonPath, 'utf8'));
-      console.log('Report data type:', typeof reportData);
-      console.log('Is array:', Array.isArray(reportData));
-      console.log('Report data:', JSON.stringify(reportData).substring(0, 200) + '...');
-      
+      const reportData = JSON.parse(
+        fs.readFileSync(this.cucumberJsonPath, "utf8")
+      );
+      console.log("Report data type:", typeof reportData);
+      console.log("Is array:", Array.isArray(reportData));
+      console.log(
+        "Report data:",
+        JSON.stringify(reportData).substring(0, 200) + "..."
+      );
+
       // Generate the report
       report.generate({
         jsonDir: this.reportsDir,
         reportPath: this.reportsDir,
-        reportName: 'Playwright Cucumber Test Report',
-        pageTitle: 'Test Automation Results',
+        reportName: "Playwright Cucumber Test Report",
+        pageTitle: "Test Automation Results",
         displayDuration: true,
         displayReportTime: true,
         durationInMS: true,
         customMetadata: true,
         metadata: {
           browser: {
-            name: process.env.BROWSER || 'chromium',
-            version: 'Latest'
+            name: process.env.BROWSER || "chromium",
+            version: "Latest",
           },
-          device: process.env.DEVICE || 'Desktop',
+          device: process.env.DEVICE || "Desktop",
           platform: {
             name: process.platform,
-            version: process.version
+            version: process.version,
           },
-          environment: process.env.TEST_ENV || 'staging',
+          environment: process.env.TEST_ENV || "staging",
           timestamp: new Date().toISOString(),
-          buildNumber: process.env.BUILD_NUMBER || 'local',
-          testType: 'E2E Automation',
-          framework: 'Playwright + Cucumber + TypeScript'
+          buildNumber: process.env.BUILD_NUMBER || "local",
+          testType: "E2E Automation",
+          framework: "Playwright + Cucumber + TypeScript",
         },
         customData: {
-          title: 'Test Information',
+          title: "Test Information",
           data: [
-            { label: 'Project', value: 'Playwright TypeScript Cucumber Framework' },
-            { label: 'Release', value: process.env.RELEASE_VERSION || '1.0.0' },
-            { label: 'Test Environment', value: process.env.BASE_URL || 'https://the-internet.herokuapp.com' },
-            { label: 'Execution Time', value: new Date().toLocaleString() },
-            { label: 'Total Scenarios', value: this.getTotalScenarios(reportData) },
-            { label: 'Browser', value: `${process.env.BROWSER || 'chromium'} (${process.env.HEADLESS !== 'false' ? 'Headless' : 'Headed'})` }
-          ]
+            {
+              label: "Project",
+              value: "Playwright TypeScript Cucumber Framework",
+            },
+            { label: "Release", value: process.env.RELEASE_VERSION || "1.0.0" },
+            {
+              label: "Test Environment",
+              value:
+                process.env.BASE_URL || "https://the-internet.herokuapp.com",
+            },
+            { label: "Execution Time", value: new Date().toLocaleString() },
+            {
+              label: "Total Scenarios",
+              value: this.getTotalScenarios(reportData),
+            },
+            {
+              label: "Browser",
+              value: `${process.env.BROWSER || "chromium"} (${process.env.HEADLESS !== "false" ? "Headless" : "Headed"})`,
+            },
+          ],
         },
-        pageFooter: '<div style="text-align: center; margin-top: 20px;"><p>Generated by Playwright TypeScript Cucumber Framework</p></div>',
+        pageFooter:
+          '<div style="text-align: center; margin-top: 20px;"><p>Generated by Playwright TypeScript Cucumber Framework</p></div>',
         reportSuiteAsScenarios: false,
         scenarioTimestamp: true,
         launchReport: true,
-        collapseTests: true
+        collapseTests: true,
       });
 
-      console.log('✅ Enhanced HTML report generated successfully!');
-      console.log(`📊 Report location: ${path.resolve(this.reportsDir)}/index.html`);
-      
+      console.log("✅ Enhanced HTML report generated successfully!");
+      console.log(
+        `📊 Report location: ${path.resolve(this.reportsDir)}/index.html`
+      );
+
       // Generate summary statistics
       this.generateSummaryReport(reportData);
-      
     } catch (error) {
-      console.error('❌ Error generating report:', error.message);
+      console.error("❌ Error generating report:", error.message);
       throw error;
     }
   }
@@ -98,11 +120,11 @@ class EnhancedReporter {
    */
   generateSummaryReport(reportData) {
     const summary = this.calculateSummary(reportData);
-    const summaryPath = path.join(this.reportsDir, 'test-summary.json');
-    
+    const summaryPath = path.join(this.reportsDir, "test-summary.json");
+
     fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
-    
-    console.log('\n📈 Test Summary:');
+
+    console.log("\n📈 Test Summary:");
     console.log(`   Total Features: ${summary.features.total}`);
     console.log(`   Total Scenarios: ${summary.scenarios.total}`);
     console.log(`   Passed: ${summary.scenarios.passed} ✅`);
@@ -110,7 +132,9 @@ class EnhancedReporter {
     console.log(`   Skipped: ${summary.scenarios.skipped} ⏭️`);
     console.log(`   Success Rate: ${summary.scenarios.successRate}%`);
     console.log(`   Total Duration: ${summary.duration.total}ms`);
-    console.log(`   Average Duration: ${summary.duration.average}ms per scenario`);
+    console.log(
+      `   Average Duration: ${summary.duration.average}ms per scenario`
+    );
   }
 
   /**
@@ -124,27 +148,27 @@ class EnhancedReporter {
     let skippedScenarios = 0;
     let totalDuration = 0;
 
-    reportData.forEach(feature => {
+    reportData.forEach((feature) => {
       if (feature.elements) {
-        feature.elements.forEach(scenario => {
+        feature.elements.forEach((scenario) => {
           totalScenarios++;
-          
+
           const scenarioStatus = this.getScenarioStatus(scenario);
           switch (scenarioStatus) {
-            case 'passed':
+            case "passed":
               passedScenarios++;
               break;
-            case 'failed':
+            case "failed":
               failedScenarios++;
               break;
-            case 'skipped':
+            case "skipped":
               skippedScenarios++;
               break;
           }
-          
+
           // Calculate duration
           if (scenario.steps) {
-            scenario.steps.forEach(step => {
+            scenario.steps.forEach((step) => {
               if (step.result && step.result.duration) {
                 totalDuration += step.result.duration;
               }
@@ -154,30 +178,34 @@ class EnhancedReporter {
       }
     });
 
-    const successRate = totalScenarios > 0 ? Math.round((passedScenarios / totalScenarios) * 100) : 0;
-    const averageDuration = totalScenarios > 0 ? Math.round(totalDuration / totalScenarios) : 0;
+    const successRate =
+      totalScenarios > 0
+        ? Math.round((passedScenarios / totalScenarios) * 100)
+        : 0;
+    const averageDuration =
+      totalScenarios > 0 ? Math.round(totalDuration / totalScenarios) : 0;
 
     return {
       timestamp: new Date().toISOString(),
       features: {
-        total: totalFeatures
+        total: totalFeatures,
       },
       scenarios: {
         total: totalScenarios,
         passed: passedScenarios,
         failed: failedScenarios,
         skipped: skippedScenarios,
-        successRate: successRate
+        successRate: successRate,
       },
       duration: {
         total: totalDuration,
-        average: averageDuration
+        average: averageDuration,
       },
       environment: {
-        browser: process.env.BROWSER || 'chromium',
-        baseUrl: process.env.BASE_URL || 'https://the-internet.herokuapp.com',
-        testEnv: process.env.TEST_ENV || 'staging'
-      }
+        browser: process.env.BROWSER || "chromium",
+        baseUrl: process.env.BASE_URL || "https://the-internet.herokuapp.com",
+        testEnv: process.env.TEST_ENV || "staging",
+      },
     };
   }
 
@@ -186,22 +214,24 @@ class EnhancedReporter {
    */
   getScenarioStatus(scenario) {
     if (!scenario.steps || scenario.steps.length === 0) {
-      return 'skipped';
+      return "skipped";
     }
 
-    const hasFailedStep = scenario.steps.some(step => 
-      step.result && step.result.status === 'failed'
+    const hasFailedStep = scenario.steps.some(
+      (step) => step.result && step.result.status === "failed"
     );
-    
+
     if (hasFailedStep) {
-      return 'failed';
+      return "failed";
     }
 
-    const allStepsPassedOrSkipped = scenario.steps.every(step => 
-      step.result && (step.result.status === 'passed' || step.result.status === 'skipped')
+    const allStepsPassedOrSkipped = scenario.steps.every(
+      (step) =>
+        step.result &&
+        (step.result.status === "passed" || step.result.status === "skipped")
     );
 
-    return allStepsPassedOrSkipped ? 'passed' : 'skipped';
+    return allStepsPassedOrSkipped ? "passed" : "skipped";
   }
 
   /**
@@ -210,7 +240,7 @@ class EnhancedReporter {
   getTotalScenarios(reportData) {
     let total = 0;
     if (Array.isArray(reportData)) {
-      reportData.forEach(feature => {
+      reportData.forEach((feature) => {
         if (feature.elements) {
           total += feature.elements.length;
         }
@@ -223,15 +253,15 @@ class EnhancedReporter {
    * Clean old reports
    */
   cleanOldReports() {
-    console.log('🧹 Cleaning old reports...');
-    
+    console.log("🧹 Cleaning old reports...");
+
     const filesToClean = [
-      path.join(this.reportsDir, 'index.html'),
-      path.join(this.reportsDir, 'cucumber-report.html'),
-      path.join(this.reportsDir, 'test-summary.json')
+      path.join(this.reportsDir, "index.html"),
+      path.join(this.reportsDir, "cucumber-report.html"),
+      path.join(this.reportsDir, "test-summary.json"),
     ];
 
-    filesToClean.forEach(file => {
+    filesToClean.forEach((file) => {
       if (fs.existsSync(file)) {
         fs.unlinkSync(file);
         console.log(`   Removed: ${file}`);
@@ -246,22 +276,22 @@ module.exports = EnhancedReporter;
 // If run directly, generate report
 if (require.main === module) {
   const reporter = new EnhancedReporter();
-  
+
   const args = process.argv.slice(2);
-  const shouldClean = args.includes('--clean');
-  
+  const shouldClean = args.includes("--clean");
+
   (async () => {
     try {
       if (shouldClean) {
         reporter.cleanOldReports();
       }
-      
+
       await reporter.generateReport();
-      
-      console.log('\n🎉 Report generation completed successfully!');
+
+      console.log("\n🎉 Report generation completed successfully!");
       process.exit(0);
     } catch (error) {
-      console.error('\n💥 Report generation failed:', error.message);
+      console.error("\n💥 Report generation failed:", error.message);
       process.exit(1);
     }
   })();

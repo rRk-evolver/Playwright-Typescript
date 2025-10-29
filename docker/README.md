@@ -69,40 +69,40 @@ The Dockerfile uses multi-stage builds for optimization:
 
 ### Core Services
 
-| Service | Description | Ports | Environment |
-|---------|-------------|-------|-------------|
-| `playwright-tests` | Main test runner | - | All |
-| `selenium-hub` | Selenium Grid Hub | 4444, 4442, 4443 | CI/Parallel |
-| `chrome-node` | Chrome browser nodes | - | CI/Parallel |
-| `firefox-node` | Firefox browser nodes | - | CI/Parallel |
-| `edge-node` | Edge browser nodes | - | CI/Parallel |
+| Service            | Description           | Ports            | Environment |
+| ------------------ | --------------------- | ---------------- | ----------- |
+| `playwright-tests` | Main test runner      | -                | All         |
+| `selenium-hub`     | Selenium Grid Hub     | 4444, 4442, 4443 | CI/Parallel |
+| `chrome-node`      | Chrome browser nodes  | -                | CI/Parallel |
+| `firefox-node`     | Firefox browser nodes | -                | CI/Parallel |
+| `edge-node`        | Edge browser nodes    | -                | CI/Parallel |
 
 ### Supporting Services
 
-| Service | Description | Ports | Profile |
-|---------|-------------|-------|---------|
-| `nginx-reports` | Report server | 8080 | reporting |
-| `test-database` | PostgreSQL test DB | 5432 | database |
-| `redis` | Caching service | 6379 | cache |
-| `prometheus` | Monitoring | 9090 | monitoring |
-| `grafana` | Dashboards | 3000 | monitoring |
+| Service         | Description        | Ports | Profile    |
+| --------------- | ------------------ | ----- | ---------- |
+| `nginx-reports` | Report server      | 8080  | reporting  |
+| `test-database` | PostgreSQL test DB | 5432  | database   |
+| `redis`         | Caching service    | 6379  | cache      |
+| `prometheus`    | Monitoring         | 9090  | monitoring |
+| `grafana`       | Dashboards         | 3000  | monitoring |
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-| Variable | Description | Default | Environments |
-|----------|-------------|---------|--------------|
-| `NODE_ENV` | Node environment | development | All |
-| `HEADLESS` | Browser headless mode | true | All |
-| `BROWSER` | Browser to use | chromium | All |
-| `TEST_ENV` | Test environment | staging | All |
-| `TAGS` | Cucumber tags | @smoke | All |
-| `PARALLEL_WORKERS` | Parallel execution count | 2 | All |
-| `SCREENSHOT` | Screenshot mode | failure | All |
-| `VIDEO` | Video recording mode | failure | All |
-| `TRACE` | Playwright trace mode | retain-on-failure | All |
-| `BASE_URL` | Application base URL | https://the-internet.herokuapp.com | All |
+| Variable           | Description              | Default                            | Environments |
+| ------------------ | ------------------------ | ---------------------------------- | ------------ |
+| `NODE_ENV`         | Node environment         | development                        | All          |
+| `HEADLESS`         | Browser headless mode    | true                               | All          |
+| `BROWSER`          | Browser to use           | chromium                           | All          |
+| `TEST_ENV`         | Test environment         | staging                            | All          |
+| `TAGS`             | Cucumber tags            | @smoke                             | All          |
+| `PARALLEL_WORKERS` | Parallel execution count | 2                                  | All          |
+| `SCREENSHOT`       | Screenshot mode          | failure                            | All          |
+| `VIDEO`            | Video recording mode     | failure                            | All          |
+| `TRACE`            | Playwright trace mode    | retain-on-failure                  | All          |
+| `BASE_URL`         | Application base URL     | https://the-internet.herokuapp.com | All          |
 
 ### Profiles
 
@@ -247,6 +247,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### Common Issues
 
 1. **Out of Memory**
+
    ```bash
    # Increase Docker memory limit to at least 8GB
    # Check memory usage
@@ -254,34 +255,38 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
 2. **Port Conflicts**
+
    ```bash
    # Check if ports are in use
    netstat -tulpn | grep :4444
-   
+
    # Stop conflicting services
    docker-compose down
    ```
 
 3. **Browser Launch Failures**
+
    ```bash
    # Check browser installation
    docker-compose exec playwright-tests npx playwright install --dry-run
-   
+
    # Reinstall browsers
    docker-compose exec playwright-tests npx playwright install
    ```
 
 4. **Permission Issues (Linux/macOS)**
+
    ```bash
    # Fix file permissions
    sudo chown -R $USER:$USER reports/ screenshots/ traces/
    ```
 
 5. **Selenium Grid Issues**
+
    ```bash
    # Check grid status
    curl http://localhost:4444/status
-   
+
    # Restart grid
    docker-compose restart selenium-hub chrome-node firefox-node
    ```
@@ -308,18 +313,21 @@ docker inspect playwright-cucumber-tests
 ### Performance Optimization
 
 1. **Use Docker Layer Caching**
+
    ```dockerfile
    # Enable BuildKit
    export DOCKER_BUILDKIT=1
    ```
 
 2. **Optimize for CI**
+
    ```bash
    # Use CI-optimized image
    docker build --target ci-optimized -t playwright-cucumber:ci .
    ```
 
 3. **Parallel Execution**
+
    ```bash
    # Increase parallel workers based on CPU cores
    docker-compose run --rm -e PARALLEL_WORKERS=8 playwright-tests
@@ -354,10 +362,10 @@ Add custom metrics to your tests:
 ```typescript
 // In your test steps
 await page.evaluate(() => {
-  performance.mark('test-start');
+  performance.mark("test-start");
   // Your test code
-  performance.mark('test-end');
-  performance.measure('test-duration', 'test-start', 'test-end');
+  performance.mark("test-end");
+  performance.measure("test-duration", "test-start", "test-end");
 });
 ```
 
@@ -409,13 +417,13 @@ spec:
         app: playwright-tests
     spec:
       containers:
-      - name: playwright-tests
-        image: your-registry.com/playwright-cucumber:latest
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PARALLEL_WORKERS
-          value: "4"
+        - name: playwright-tests
+          image: your-registry.com/playwright-cucumber:latest
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PARALLEL_WORKERS
+              value: "4"
 ```
 
 ### Scaling

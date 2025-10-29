@@ -1,5 +1,5 @@
 # Docker Compose for CI/CD Environment
-version: '3.8'
+version: "3.8"
 
 services:
   playwright-tests:

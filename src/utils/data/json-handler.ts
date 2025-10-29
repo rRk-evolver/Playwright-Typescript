@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Logger } from '../logger';
+
 import { DataEncryption } from '../encryption/data-encryption';
+import { Logger } from '../logger';
+
 
 const logger = Logger.getInstance();
 
@@ -31,7 +33,12 @@ export class JSONDataHandler {
     } = {}
   ): Promise<T> {
     try {
-      const { encoding = 'utf8', decrypt = false, decryptPaths = [], validateJSON = true } = options;
+      const {
+        encoding = "utf8",
+        decrypt = false,
+        decryptPaths = [],
+        validateJSON = true,
+      } = options;
 
       logger.info(`Reading JSON file: ${filePath}`);
 
@@ -55,7 +62,9 @@ export class JSONDataHandler {
         data = await this.decryptData(data, decryptPaths);
       }
 
-      logger.info(`Successfully read JSON file with ${JSON.stringify(data).length} characters`);
+      logger.info(
+        `Successfully read JSON file with ${JSON.stringify(data).length} characters`
+      );
       return data;
     } catch (error) {
       logger.error(`Failed to read JSON file: ${filePath}`, error);
@@ -85,10 +94,10 @@ export class JSONDataHandler {
       const {
         pretty = true,
         indent = 2,
-        encoding = 'utf8',
+        encoding = "utf8",
         createBackup = false,
         encrypt = false,
-        encryptPaths = []
+        encryptPaths = [],
       } = options;
 
       logger.info(`Writing data to JSON file: ${filePath}`);
@@ -113,14 +122,16 @@ export class JSONDataHandler {
       }
 
       // Convert to JSON string
-      const jsonString = pretty 
+      const jsonString = pretty
         ? JSON.stringify(processedData, null, indent)
         : JSON.stringify(processedData);
 
       // Write to file
       fs.writeFileSync(filePath, jsonString, { encoding });
 
-      logger.info(`Successfully wrote JSON file with ${jsonString.length} characters`);
+      logger.info(
+        `Successfully wrote JSON file with ${jsonString.length} characters`
+      );
     } catch (error) {
       logger.error(`Failed to write JSON file: ${filePath}`, error);
       throw error;
@@ -145,16 +156,24 @@ export class JSONDataHandler {
     } = {}
   ): Promise<void> {
     try {
-      const { createIfNotExists = true, createBackup = true, pretty = true } = options;
+      const {
+        createIfNotExists = true,
+        createBackup = true,
+        pretty = true,
+      } = options;
 
-      logger.info(`Updating property '${propertyPath}' in JSON file: ${filePath}`);
+      logger.info(
+        `Updating property '${propertyPath}' in JSON file: ${filePath}`
+      );
 
       // Read existing data or create empty object
       let data: any = {};
       if (fs.existsSync(filePath)) {
         data = await this.readJSONFile(filePath);
       } else if (!createIfNotExists) {
-        throw new Error(`JSON file not found and createIfNotExists is false: ${filePath}`);
+        throw new Error(
+          `JSON file not found and createIfNotExists is false: ${filePath}`
+        );
       }
 
       // Update property using dot notation
@@ -165,7 +184,10 @@ export class JSONDataHandler {
 
       logger.info(`Successfully updated property '${propertyPath}'`);
     } catch (error) {
-      logger.error(`Failed to update property '${propertyPath}' in JSON file: ${filePath}`, error);
+      logger.error(
+        `Failed to update property '${propertyPath}' in JSON file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -182,13 +204,17 @@ export class JSONDataHandler {
     defaultValue?: T
   ): Promise<T> {
     try {
-      logger.debug(`Getting property '${propertyPath}' from JSON file: ${filePath}`);
+      logger.debug(
+        `Getting property '${propertyPath}' from JSON file: ${filePath}`
+      );
 
       const data = await this.readJSONFile(filePath);
       const value = this.getPropertyByPath(data, propertyPath);
 
       if (value === undefined && defaultValue !== undefined) {
-        logger.debug(`Property '${propertyPath}' not found, returning default value`);
+        logger.debug(
+          `Property '${propertyPath}' not found, returning default value`
+        );
         return defaultValue;
       }
 
@@ -196,10 +222,16 @@ export class JSONDataHandler {
       return value;
     } catch (error) {
       if (defaultValue !== undefined) {
-        logger.warn(`Failed to get property '${propertyPath}', returning default value:`, error);
+        logger.warn(
+          `Failed to get property '${propertyPath}', returning default value:`,
+          error
+        );
         return defaultValue;
       }
-      logger.error(`Failed to get property '${propertyPath}' from JSON file: ${filePath}`, error);
+      logger.error(
+        `Failed to get property '${propertyPath}' from JSON file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -218,7 +250,9 @@ export class JSONDataHandler {
     try {
       const { createBackup = true, pretty = true } = options;
 
-      logger.info(`Deleting property '${propertyPath}' from JSON file: ${filePath}`);
+      logger.info(
+        `Deleting property '${propertyPath}' from JSON file: ${filePath}`
+      );
 
       const data = await this.readJSONFile(filePath);
       const deleted = this.deletePropertyByPath(data, propertyPath);
@@ -232,7 +266,10 @@ export class JSONDataHandler {
 
       return deleted;
     } catch (error) {
-      logger.error(`Failed to delete property '${propertyPath}' from JSON file: ${filePath}`, error);
+      logger.error(
+        `Failed to delete property '${propertyPath}' from JSON file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -254,7 +291,12 @@ export class JSONDataHandler {
     } = {}
   ): Promise<T> {
     try {
-      const { deep = true, createIfNotExists = true, createBackup = true, pretty = true } = options;
+      const {
+        deep = true,
+        createIfNotExists = true,
+        createBackup = true,
+        pretty = true,
+      } = options;
 
       logger.info(`Merging data with JSON file: ${filePath}`);
 
@@ -263,18 +305,20 @@ export class JSONDataHandler {
       if (fs.existsSync(filePath)) {
         existingData = await this.readJSONFile(filePath);
       } else if (!createIfNotExists) {
-        throw new Error(`JSON file not found and createIfNotExists is false: ${filePath}`);
+        throw new Error(
+          `JSON file not found and createIfNotExists is false: ${filePath}`
+        );
       }
 
       // Merge data
-      const mergedData = deep 
+      const mergedData = deep
         ? this.deepMerge(existingData, newData)
         : { ...existingData, ...newData };
 
       // Write merged data
       await this.writeJSONFile(mergedData, filePath, { pretty, createBackup });
 
-      logger.info('Successfully merged data with JSON file');
+      logger.info("Successfully merged data with JSON file");
       return mergedData;
     } catch (error) {
       logger.error(`Failed to merge data with JSON file: ${filePath}`, error);
@@ -295,24 +339,24 @@ export class JSONDataHandler {
       logger.info(`Querying JSON file: ${filePath}`);
 
       const data = await this.readJSONFile(filePath);
-      
+
       // If data is not an array, return empty array
       if (!Array.isArray(data)) {
-        logger.warn('JSON data is not an array, cannot query');
+        logger.warn("JSON data is not an array, cannot query");
         return [];
       }
 
       // Filter data based on query criteria
-      const results = data.filter(item => {
+      const results = data.filter((item) => {
         return Object.entries(query).every(([key, value]) => {
           const itemValue = this.getPropertyByPath(item, key);
-          
-          if (typeof value === 'string' && value.includes('*')) {
+
+          if (typeof value === "string" && value.includes("*")) {
             // Support wildcard matching
-            const regex = new RegExp(value.replace(/\*/g, '.*'), 'i');
+            const regex = new RegExp(value.replace(/\*/g, ".*"), "i");
             return regex.test(itemValue);
           }
-          
+
           return itemValue === value;
         });
       });
@@ -339,10 +383,10 @@ export class JSONDataHandler {
 
       const data = await this.readJSONFile<T>(filePath);
 
-      if (typeof schema === 'function') {
+      if (typeof schema === "function") {
         // Use custom validation function
         const valid = schema(data);
-        return { valid, errors: valid ? [] : ['Custom validation failed'] };
+        return { valid, errors: valid ? [] : ["Custom validation failed"] };
       } else {
         // Simple schema validation (basic implementation)
         const errors = this.validateAgainstSchema(data, schema);
@@ -350,7 +394,10 @@ export class JSONDataHandler {
       }
     } catch (error) {
       logger.error(`Failed to validate JSON file: ${filePath}`, error);
-      return { valid: false, errors: [(error as any)?.message || 'Unknown error'] };
+      return {
+        valid: false,
+        errors: [(error as any)?.message || "Unknown error"],
+      };
     }
   }
 
@@ -369,11 +416,11 @@ export class JSONDataHandler {
       let data = await this.readJSONFile(filePath);
 
       if (!Array.isArray(data)) {
-        throw new Error('JSON data must be an array to select random item');
+        throw new Error("JSON data must be an array to select random item");
       }
 
       if (filterCriteria) {
-        data = data.filter(item => {
+        data = data.filter((item) => {
           return Object.entries(filterCriteria).every(([key, value]) => {
             return this.getPropertyByPath(item, key) === value;
           });
@@ -381,7 +428,7 @@ export class JSONDataHandler {
       }
 
       if (data.length === 0) {
-        throw new Error('No data available to select random item');
+        throw new Error("No data available to select random item");
       }
 
       const randomIndex = Math.floor(Math.random() * data.length);
@@ -390,7 +437,10 @@ export class JSONDataHandler {
       logger.debug(`Selected random item at index ${randomIndex}`);
       return randomItem;
     } catch (error) {
-      logger.error(`Failed to get random item from JSON file: ${filePath}`, error);
+      logger.error(
+        `Failed to get random item from JSON file: ${filePath}`,
+        error
+      );
       throw error;
     }
   }
@@ -413,14 +463,14 @@ export class JSONDataHandler {
    * Get property by dot notation path
    */
   private getPropertyByPath(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+    return path.split(".").reduce((current, key) => current?.[key], obj);
   }
 
   /**
    * Set property by dot notation path
    */
   private setPropertyByPath(obj: any, path: string, value: any): void {
-    const keys = path.split('.');
+    const keys = path.split(".");
     const lastKey = keys.pop()!;
     const target = keys.reduce((current, key) => {
       if (!(key in current)) {
@@ -435,10 +485,10 @@ export class JSONDataHandler {
    * Delete property by dot notation path
    */
   private deletePropertyByPath(obj: any, path: string): boolean {
-    const keys = path.split('.');
+    const keys = path.split(".");
     const lastKey = keys.pop()!;
     const target = keys.reduce((current, key) => current?.[key], obj);
-    
+
     if (target && lastKey in target) {
       delete target[lastKey];
       return true;
@@ -451,15 +501,19 @@ export class JSONDataHandler {
    */
   private deepMerge(target: any, source: any): any {
     const result = { ...target };
-    
+
     for (const key in source) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (
+        source[key] &&
+        typeof source[key] === "object" &&
+        !Array.isArray(source[key])
+      ) {
         result[key] = this.deepMerge(result[key] || {}, source[key]);
       } else {
         result[key] = source[key];
       }
     }
-    
+
     return result;
   }
 
@@ -468,19 +522,21 @@ export class JSONDataHandler {
    */
   private async encryptData(data: any, encryptPaths: string[]): Promise<any> {
     const result = JSON.parse(JSON.stringify(data)); // Deep clone
-    
+
     for (const path of encryptPaths) {
       const value = this.getPropertyByPath(result, path);
       if (value !== undefined) {
         try {
-          const encryptedValue = await this.encryption.encrypt(value.toString());
+          const encryptedValue = await this.encryption.encrypt(
+            value.toString()
+          );
           this.setPropertyByPath(result, path, encryptedValue);
         } catch (error) {
           logger.warn(`Failed to encrypt path '${path}':`, error);
         }
       }
     }
-    
+
     return result;
   }
 
@@ -489,19 +545,21 @@ export class JSONDataHandler {
    */
   private async decryptData(data: any, decryptPaths: string[]): Promise<any> {
     const result = JSON.parse(JSON.stringify(data)); // Deep clone
-    
+
     for (const path of decryptPaths) {
       const value = this.getPropertyByPath(result, path);
       if (value !== undefined) {
         try {
-          const decryptedValue = await this.encryption.decrypt(value.toString());
+          const decryptedValue = await this.encryption.decrypt(
+            value.toString()
+          );
           this.setPropertyByPath(result, path, decryptedValue);
         } catch (error) {
           logger.warn(`Failed to decrypt path '${path}':`, error);
         }
       }
     }
-    
+
     return result;
   }
 
@@ -510,12 +568,12 @@ export class JSONDataHandler {
    */
   private validateAgainstSchema(data: any, schema: any): string[] {
     const errors: string[] = [];
-    
+
     // This is a basic implementation - you might want to use a library like Ajv for more complex validation
     if (schema.type && typeof data !== schema.type) {
       errors.push(`Expected type ${schema.type}, got ${typeof data}`);
     }
-    
+
     if (schema.required && Array.isArray(schema.required)) {
       for (const field of schema.required) {
         if (!(field in data)) {
@@ -523,7 +581,7 @@ export class JSONDataHandler {
         }
       }
     }
-    
+
     return errors;
   }
 }

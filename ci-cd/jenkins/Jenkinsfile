@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     parameters {
         choice(
             name: 'BROWSER',
@@ -28,29 +28,29 @@ pipeline {
             description: 'Number of parallel workers'
         )
     }
-    
+
     environment {
         NODE_VERSION = '18'
         PLAYWRIGHT_BROWSERS_PATH = "${WORKSPACE}/pw-browsers"
-        
+
         // Test configuration
         HEADLESS = "${params.HEADLESS}"
         BROWSER = "${params.BROWSER}"
         TAGS = "${params.TAGS}"
         PARALLEL_WORKERS = "${params.PARALLEL_WORKERS}"
         TEST_ENV = "${params.ENVIRONMENT}"
-        
+
         // CI environment variables
         CI = 'true'
         JENKINS = 'true'
         BUILD_NUMBER = "${BUILD_NUMBER}"
         BUILD_URL = "${BUILD_URL}"
-        
+
         // Reporting
         SCREENSHOT = 'failure'
         VIDEO = 'failure'
         TRACE = 'retain-on-failure'
-        
+
         // Credentials
         JIRA_USERNAME = credentials('jira-username')
         JIRA_API_TOKEN = credentials('jira-api-token')
@@ -58,19 +58,19 @@ pipeline {
         TESTRAIL_USERNAME = credentials('testrail-username')
         TESTRAIL_API_KEY = credentials('testrail-api-key')
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                
+
                 script {
                     // Set build description
                     currentBuild.description = "Browser: ${params.BROWSER} | Env: ${params.ENVIRONMENT} | Tags: ${params.TAGS}"
                 }
             }
         }
-        
+
         stage('Setup Environment') {
             steps {
                 script {
@@ -78,7 +78,7 @@ pipeline {
                     def nodeHome = tool name: 'NodeJS-18', type: 'nodejs'
                     env.PATH = "${nodeHome}/bin:${env.PATH}"
                 }
-                
+
                 // Setup environment file
                 sh '''
                     cp .env.example .env
@@ -91,15 +91,15 @@ pipeline {
                     echo "BUILD_URL=${BUILD_URL}" >> .env
                     echo "PARALLEL_WORKERS=${PARALLEL_WORKERS}" >> .env
                 '''
-                
+
                 // Install dependencies
                 sh 'npm ci'
-                
+
                 // Install Playwright browsers
                 sh 'npm run install:browsers'
             }
         }
-        
+
         stage('Code Quality') {
             parallel {
                 stage('Type Check') {
@@ -107,11 +107,11 @@ pipeline {
                         sh 'npm run type-check'
                     }
                 }
-                
+
                 stage('Lint') {
                     steps {
                         sh 'npm run lint'
-                        
+
                         // Publish lint results
                         publishHTML([
                             allowMissing: false,
@@ -124,31 +124,31 @@ pipeline {
                         ])
                     }
                 }
-                
+
                 stage('Security Scan') {
                     steps {
                         // Run npm audit
                         sh 'npm audit --audit-level moderate --json > reports/security-audit.json || true'
-                        
+
                         // Archive security report
                         archiveArtifacts artifacts: 'reports/security-audit.json', allowEmptyArchive: true
                     }
                 }
             }
         }
-        
+
         stage('Run Tests') {
             steps {
                 script {
                     def browsers = params.BROWSER == 'all' ? ['chromium', 'firefox', 'webkit'] : [params.BROWSER]
                     def testStages = [:]
-                    
+
                     browsers.each { browser ->
                         testStages["Test-${browser}"] = {
                             stage("Test ${browser}") {
                                 sh """
                                     mkdir -p reports screenshots traces
-                                    
+
                                     npx cucumber-js features/ \\
                                         --require-module ts-node/register \\
                                         --require src/steps/**/*.ts \\
@@ -160,7 +160,7 @@ pipeline {
                                         --format-options '{"snippetInterface": "async-await"}' \\
                                         --world-parameters '{"browser": "${browser}"}'
                                 """
-                                
+
                                 // Generate enhanced reports
                                 sh """
                                     mv reports/cucumber-report-${browser}.json reports/cucumber-report.json
@@ -171,12 +171,12 @@ pipeline {
                             }
                         }
                     }
-                    
+
                     // Run tests in parallel
                     parallel testStages
                 }
             }
-            
+
             post {
                 always {
                     // Archive test artifacts
@@ -185,7 +185,7 @@ pipeline {
                         screenshots/**/*,
                         traces/**/*
                     ''', allowEmptyArchive: true
-                    
+
                     // Publish HTML reports
                     publishHTML([
                         allowMissing: false,
@@ -196,7 +196,7 @@ pipeline {
                         reportName: 'Test Report',
                         reportTitles: 'Playwright Cucumber Test Results'
                     ])
-                    
+
                     // Publish Cucumber results
                     publishCucumberResults(
                         buildStatus: 'UNSTABLE',
@@ -210,7 +210,7 @@ pipeline {
                         undefinedStepsNumber: 0
                     )
                 }
-                
+
                 failure {
                     // Capture additional debug info on failure
                     sh '''
@@ -222,19 +222,19 @@ pipeline {
                         echo "=== Environment Variables ===" >> debug-info.txt
                         env | grep -E "(BROWSER|HEADLESS|TEST_ENV|CI)" >> debug-info.txt
                     '''
-                    
+
                     archiveArtifacts artifacts: 'debug-info.txt', allowEmptyArchive: true
                 }
             }
         }
-        
+
         stage('Generate Reports') {
             steps {
                 // Merge all browser reports
                 sh '''
                     mkdir -p merged-reports
                     cp reports/cucumber-report*.json merged-reports/ 2>/dev/null || true
-                    
+
                     if [ "$(ls -A merged-reports/)" ]; then
                         node -e "
                         const report = require('multiple-cucumber-html-reporter');
@@ -268,7 +268,7 @@ pipeline {
                         "
                     fi
                 '''
-                
+
                 // Publish merged report
                 publishHTML([
                     allowMissing: true,
@@ -281,7 +281,7 @@ pipeline {
                 ])
             }
         }
-        
+
         stage('Update Test Management') {
             parallel {
                 stage('Update Jira') {
@@ -307,7 +307,7 @@ pipeline {
                         }
                     }
                 }
-                
+
                 stage('Update TestRail') {
                     when {
                         expression { env.TESTRAIL_USERNAME && env.TESTRAIL_API_KEY }
@@ -323,7 +323,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             // Clean workspace but keep reports
@@ -336,7 +336,7 @@ pipeline {
                 } catch (Exception e) {
                     echo "Could not read test summary: ${e.getMessage()}"
                 }
-                
+
                 // Set build result based on test results
                 if (testSummary.scenarios?.failed > 0) {
                     currentBuild.result = 'UNSTABLE'
@@ -349,10 +349,10 @@ pipeline {
                 }
             }
         }
-        
+
         success {
             echo "✅ All tests passed successfully!"
-            
+
             // Send success notification
             script {
                 if (env.SLACK_WEBHOOK_URL) {
@@ -360,7 +360,7 @@ pipeline {
                         channel: '#test-results',
                         color: 'good',
                         message: """
-                        ✅ *Playwright Tests Passed* 
+                        ✅ *Playwright Tests Passed*
                         Build: #${BUILD_NUMBER}
                         Environment: ${params.ENVIRONMENT}
                         Browser: ${params.BROWSER}
@@ -372,10 +372,10 @@ pipeline {
                 }
             }
         }
-        
+
         unstable {
             echo "⚠️ Some tests failed!"
-            
+
             // Send unstable notification
             script {
                 if (env.SLACK_WEBHOOK_URL) {
@@ -395,10 +395,10 @@ pipeline {
                 }
             }
         }
-        
+
         failure {
             echo "❌ Build failed!"
-            
+
             // Send failure notification
             script {
                 if (env.SLACK_WEBHOOK_URL) {
@@ -418,14 +418,14 @@ pipeline {
                 }
             }
         }
-        
+
         cleanup {
             // Clean up old artifacts but keep recent ones
             script {
                 sh '''
                     # Keep only last 10 builds worth of screenshots
                     find screenshots/ -name "*.png" -mtime +10 -delete 2>/dev/null || true
-                    
+
                     # Clean up large trace files older than 7 days
                     find traces/ -name "*.zip" -mtime +7 -delete 2>/dev/null || true
                 '''

@@ -2,18 +2,18 @@ name: Playwright Cucumber Tests
 
 on:
   push:
-    branches: [ main, develop, feature/* ]
+    branches: [main, develop, feature/*]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
     # Run tests daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
       browser:
-        description: 'Browser to run tests'
+        description: "Browser to run tests"
         required: false
-        default: 'chromium'
+        default: "chromium"
         type: choice
         options:
           - chromium
@@ -21,22 +21,22 @@ on:
           - webkit
           - all
       environment:
-        description: 'Test environment'
+        description: "Test environment"
         required: false
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
           - production
           - development
       tags:
-        description: 'Test tags to run (e.g., @smoke, @regression)'
+        description: "Test tags to run (e.g., @smoke, @regression)"
         required: false
-        default: '@smoke'
+        default: "@smoke"
         type: string
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: "18"
   PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
       matrix:
         browser: ${{ github.event.inputs.browser == 'all' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON(format('["{0}"]', github.event.inputs.browser || 'chromium')) }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: |
@@ -151,36 +151,36 @@ jobs:
           script: |
             const fs = require('fs');
             const path = 'reports/test-summary-${{ matrix.browser }}.json';
-            
+
             if (fs.existsSync(path)) {
               const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
               const status = summary.scenarios.failed > 0 ? '❌ FAILED' : '✅ PASSED';
               const successRate = summary.scenarios.successRate;
-              
+
               const body = `
               ## 🎭 Playwright Test Results (${{ matrix.browser }})
-              
+
               **Status:** ${status}
               **Success Rate:** ${successRate}%
-              
+
               ### 📊 Summary
               - **Total Scenarios:** ${summary.scenarios.total}
               - **Passed:** ${summary.scenarios.passed} ✅
               - **Failed:** ${summary.scenarios.failed} ❌
               - **Skipped:** ${summary.scenarios.skipped} ⏭️
-              
+
               ### ⏱️ Performance
               - **Total Duration:** ${Math.round(summary.duration.total / 1000)}s
               - **Average per Scenario:** ${Math.round(summary.duration.average / 1000)}s
-              
+
               ### 🌍 Environment
               - **Browser:** ${{ matrix.browser }}
               - **Environment:** ${summary.environment.testEnv}
               - **Base URL:** ${summary.environment.baseUrl}
-              
+
               [View detailed report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
               `;
-              
+
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: always()
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -203,7 +203,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -217,7 +217,7 @@ jobs:
         run: |
           mkdir -p merged-reports
           find artifacts/ -name "cucumber-report*.json" -exec cp {} merged-reports/ \;
-          
+
           node -e "
           const report = require('multiple-cucumber-html-reporter');
           report.generate({
@@ -257,7 +257,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, merge_reports]
     if: always()
-    
+
     steps:
       - name: Send Slack notification
         if: env.SLACK_WEBHOOK_URL
@@ -265,9 +265,9 @@ jobs:
         with:
           status: ${{ needs.test.result }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          channel: '#test-results'
-          username: 'GitHub Actions'
-          icon_emoji: ':test_tube:'
+          channel: "#test-results"
+          username: "GitHub Actions"
+          icon_emoji: ":test_tube:"
           fields: repo,message,commit,author,action,eventName,ref,workflow
           custom_payload: |
             {
@@ -306,12 +306,12 @@ jobs:
           subject: "🚨 Playwright Tests Failed - Build #${{ github.run_number }}"
           body: |
             The Playwright Cucumber tests have failed on the main branch.
-            
+
             Repository: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
             Author: ${{ github.actor }}
-            
+
             View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.NOTIFICATION_EMAIL }}
           from: "GitHub Actions <noreply@github.com>"

@@ -1,9 +1,11 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { CSVDataHandler } from './data/csv-handler';
 import { ExcelDataHandler } from './data/excel-handler';
 import { JSONDataHandler } from './data/json-handler';
 import { Logger } from './logger';
-import * as path from 'path';
-import * as fs from 'fs';
+
 
 const logger = Logger.getInstance();
 
@@ -15,7 +17,7 @@ export class DataDrivenTestManager {
   private csvHandler: CSVDataHandler;
   private excelHandler: ExcelDataHandler;
   private jsonHandler: JSONDataHandler;
-  
+
   private testDataCache: Map<string, any[]> = new Map();
   private configCache: Map<string, any> = new Map();
 
@@ -23,8 +25,8 @@ export class DataDrivenTestManager {
     this.csvHandler = new CSVDataHandler();
     this.excelHandler = new ExcelDataHandler();
     this.jsonHandler = new JSONDataHandler();
-    
-    logger.info('🚀 Data-Driven Test Manager initialized');
+
+    logger.info("🚀 Data-Driven Test Manager initialized");
   }
 
   /**
@@ -42,7 +44,12 @@ export class DataDrivenTestManager {
       randomSample?: boolean;
     } = {}
   ): Promise<any[]> {
-    const { useCache = true, filterCriteria, sampleSize, randomSample = false } = options;
+    const {
+      useCache = true,
+      filterCriteria,
+      sampleSize,
+      randomSample = false,
+    } = options;
     const absolutePath = path.resolve(filePath);
     const cacheKey = `${absolutePath}_${JSON.stringify(options)}`;
 
@@ -59,22 +66,26 @@ export class DataDrivenTestManager {
 
     try {
       switch (fileExtension) {
-        case '.csv':
+        case ".csv":
           data = await this.csvHandler.readCSVFile(absolutePath, {
             headers: true,
-            skipEmptyLines: true
+            skipEmptyLines: true,
           });
           break;
 
-        case '.xlsx':
-        case '.xls':
-          data = await this.excelHandler.readExcelFile(absolutePath, options.sheetName, {
-            hasHeaders: true,
-            skipEmptyRows: true
-          });
+        case ".xlsx":
+        case ".xls":
+          data = await this.excelHandler.readExcelFile(
+            absolutePath,
+            options.sheetName,
+            {
+              hasHeaders: true,
+              skipEmptyRows: true,
+            }
+          );
           break;
 
-        case '.json':
+        case ".json":
           const jsonData = await this.jsonHandler.readJSONFile(absolutePath);
           data = Array.isArray(jsonData) ? jsonData : [jsonData];
           break;
@@ -91,7 +102,7 @@ export class DataDrivenTestManager {
 
       // Apply sampling if specified
       if (sampleSize && sampleSize < data.length) {
-        data = randomSample 
+        data = randomSample
           ? this.getRandomSample(data, sampleSize)
           : data.slice(0, sampleSize);
         logger.info(`📊 Applied sampling, using ${data.length} records`);
@@ -104,7 +115,6 @@ export class DataDrivenTestManager {
 
       logger.info(`✅ Loaded ${data.length} records from ${filePath}`);
       return data;
-
     } catch (error) {
       logger.error(`❌ Failed to load test data from ${filePath}:`, error);
       throw error;
@@ -116,7 +126,10 @@ export class DataDrivenTestManager {
    * @param configPath - Path to configuration file
    * @param useCache - Whether to use caching
    */
-  async loadConfiguration(configPath: string, useCache: boolean = true): Promise<any> {
+  async loadConfiguration(
+    configPath: string,
+    useCache: boolean = true
+  ): Promise<any> {
     const absolutePath = path.resolve(configPath);
 
     if (useCache && this.configCache.has(absolutePath)) {
@@ -128,16 +141,18 @@ export class DataDrivenTestManager {
 
     try {
       const config = await this.jsonHandler.readJSONFile(absolutePath);
-      
+
       if (useCache) {
         this.configCache.set(absolutePath, config);
       }
 
       logger.info(`✅ Configuration loaded successfully`);
       return config;
-
     } catch (error) {
-      logger.error(`❌ Failed to load configuration from ${configPath}:`, error);
+      logger.error(
+        `❌ Failed to load configuration from ${configPath}:`,
+        error
+      );
       throw error;
     }
   }
@@ -150,7 +165,7 @@ export class DataDrivenTestManager {
     testFunction: (data: any, index: number, source: string) => Promise<void>;
     dataSources: Array<{
       path: string;
-      type: 'csv' | 'excel' | 'json';
+      type: "csv" | "excel" | "json";
       sheetName?: string;
       label?: string;
       filterCriteria?: Record<string, any>;
@@ -167,7 +182,7 @@ export class DataDrivenTestManager {
     results: Array<{
       source: string;
       index: number;
-      status: 'passed' | 'failed' | 'skipped';
+      status: "passed" | "failed" | "skipped";
       duration: number;
       error?: string;
       data?: any;
@@ -179,10 +194,12 @@ export class DataDrivenTestManager {
       parallel = false,
       maxConcurrency = 4,
       continueOnFailure = true,
-      generateReport = true
+      generateReport = true,
     } = testConfig;
 
-    logger.info(`🔄 Executing data-driven tests with ${dataSources.length} data sources`);
+    logger.info(
+      `🔄 Executing data-driven tests with ${dataSources.length} data sources`
+    );
 
     const results: any[] = [];
     let totalTests = 0;
@@ -193,10 +210,12 @@ export class DataDrivenTestManager {
     for (const dataSource of dataSources) {
       try {
         logger.info(`📊 Processing data source: ${dataSource.path}`);
-        
+
         const data = await this.loadTestData(dataSource.path, {
-          sheetName: dataSource.sheetName,
-          filterCriteria: dataSource.filterCriteria
+          ...(dataSource.sheetName && { sheetName: dataSource.sheetName }),
+          ...(dataSource.filterCriteria && {
+            filterCriteria: dataSource.filterCriteria,
+          }),
         });
 
         const sourceLabel = dataSource.label || path.basename(dataSource.path);
@@ -205,7 +224,7 @@ export class DataDrivenTestManager {
         if (parallel) {
           // Execute tests in parallel with concurrency limit
           const chunks = this.chunkArray(data, maxConcurrency);
-          
+
           for (const chunk of chunks) {
             const promises = chunk.map(async (record, chunkIndex) => {
               const globalIndex = chunks.flat().indexOf(record);
@@ -234,10 +253,12 @@ export class DataDrivenTestManager {
             results.push(result);
           }
         }
-
       } catch (error) {
-        logger.error(`❌ Failed to process data source ${dataSource.path}:`, error);
-        
+        logger.error(
+          `❌ Failed to process data source ${dataSource.path}:`,
+          error
+        );
+
         if (!continueOnFailure) {
           throw error;
         }
@@ -245,11 +266,17 @@ export class DataDrivenTestManager {
     }
 
     // Calculate final statistics
-    results.forEach(result => {
+    results.forEach((result) => {
       switch (result.status) {
-        case 'passed': passed++; break;
-        case 'failed': failed++; break;
-        case 'skipped': skipped++; break;
+        case "passed":
+          passed++;
+          break;
+        case "failed":
+          failed++;
+          break;
+        case "skipped":
+          skipped++;
+          break;
       }
     });
 
@@ -258,7 +285,7 @@ export class DataDrivenTestManager {
       passed,
       failed,
       skipped,
-      results
+      results,
     };
 
     logger.info(`🏁 Data-driven test execution completed:`);
@@ -294,7 +321,12 @@ export class DataDrivenTestManager {
       };
     } = {}
   ): Promise<void> {
-    const { sheetName = 'Sheet1', pretty = true, includeHeaders = true, encryption } = options;
+    const {
+      sheetName = "Sheet1",
+      pretty = true,
+      includeHeaders = true,
+      encryption,
+    } = options;
     const absolutePath = path.resolve(outputPath);
     const fileExtension = path.extname(absolutePath).toLowerCase();
 
@@ -302,28 +334,46 @@ export class DataDrivenTestManager {
 
     try {
       switch (fileExtension) {
-        case '.csv':
-          await this.csvHandler.writeCSVFile(data, absolutePath, {
-            headers: includeHeaders ? Object.keys(data[0] || {}) : undefined,
-            encrypt: encryption?.enabled,
-            encryptColumns: encryption?.columns
-          });
+        case ".csv":
+          const csvOptions: any = {};
+          if (includeHeaders) {
+            csvOptions.headers = Object.keys(data[0] || {});
+          }
+          if (encryption?.enabled !== undefined) {
+            csvOptions.encrypt = encryption.enabled;
+          }
+          if (encryption?.columns) {
+            csvOptions.encryptColumns = encryption.columns;
+          }
+          await this.csvHandler.writeCSVFile(data, absolutePath, csvOptions);
           break;
 
-        case '.xlsx':
-        case '.xls':
-          await this.excelHandler.writeExcelFile(data, absolutePath, sheetName, {
-            encrypt: encryption?.enabled,
-            encryptColumns: encryption?.columns
-          });
+        case ".xlsx":
+        case ".xls":
+          const excelOptions: any = {};
+          if (encryption?.enabled !== undefined) {
+            excelOptions.encrypt = encryption.enabled;
+          }
+          if (encryption?.columns) {
+            excelOptions.encryptColumns = encryption.columns;
+          }
+          await this.excelHandler.writeExcelFile(
+            data,
+            absolutePath,
+            sheetName,
+            excelOptions
+          );
           break;
 
-        case '.json':
-          await this.jsonHandler.writeJSONFile(data, absolutePath, {
-            pretty,
-            encrypt: encryption?.enabled,
-            encryptPaths: encryption?.columns
-          });
+        case ".json":
+          const jsonOptions: any = { pretty };
+          if (encryption?.enabled !== undefined) {
+            jsonOptions.encrypt = encryption.enabled;
+          }
+          if (encryption?.columns) {
+            jsonOptions.encryptPaths = encryption.columns;
+          }
+          await this.jsonHandler.writeJSONFile(data, absolutePath, jsonOptions);
           break;
 
         default:
@@ -331,7 +381,6 @@ export class DataDrivenTestManager {
       }
 
       logger.info(`✅ Data exported successfully to: ${outputPath}`);
-
     } catch (error) {
       logger.error(`❌ Failed to export data to ${outputPath}:`, error);
       throw error;
@@ -347,10 +396,12 @@ export class DataDrivenTestManager {
     issues: Array<{
       source: string;
       issue: string;
-      severity: 'low' | 'medium' | 'high';
+      severity: "low" | "medium" | "high";
     }>;
   }> {
-    logger.info(`🔍 Validating data integrity for ${dataSources.length} sources`);
+    logger.info(
+      `🔍 Validating data integrity for ${dataSources.length} sources`
+    );
 
     const issues: any[] = [];
     let valid = true;
@@ -358,13 +409,13 @@ export class DataDrivenTestManager {
     for (const source of dataSources) {
       try {
         const data = await this.loadTestData(source, { useCache: false });
-        
+
         // Check for empty data
         if (data.length === 0) {
           issues.push({
             source,
-            issue: 'Data source is empty',
-            severity: 'high'
+            issue: "Data source is empty",
+            severity: "high",
           });
           valid = false;
         }
@@ -378,37 +429,38 @@ export class DataDrivenTestManager {
               issues.push({
                 source,
                 issue: `Inconsistent structure at record ${i + 1}`,
-                severity: 'medium'
+                severity: "medium",
               });
             }
           }
         }
 
         // Check for missing required fields
-        const requiredFields = ['testType', 'priority'];
+        const requiredFields = ["testType", "priority"];
         for (const record of data) {
           for (const field of requiredFields) {
             if (!record[field]) {
               issues.push({
                 source,
                 issue: `Missing required field '${field}' in some records`,
-                severity: 'medium'
+                severity: "medium",
               });
             }
           }
         }
-
       } catch (error) {
         issues.push({
           source,
-          issue: `Failed to load data source: ${error.message}`,
-          severity: 'high'
+          issue: `Failed to load data source: ${(error as Error).message}`,
+          severity: "high",
         });
         valid = false;
       }
     }
 
-    logger.info(`🏁 Data integrity validation completed: ${valid ? 'PASSED' : 'FAILED'}`);
+    logger.info(
+      `🏁 Data integrity validation completed: ${valid ? "PASSED" : "FAILED"}`
+    );
     if (issues.length > 0) {
       logger.warn(`⚠️ Found ${issues.length} data integrity issues`);
     }
@@ -422,7 +474,7 @@ export class DataDrivenTestManager {
   clearCache(): void {
     this.testDataCache.clear();
     this.configCache.clear();
-    logger.info('🧹 Cache cleared successfully');
+    logger.info("🧹 Cache cleared successfully");
   }
 
   /**
@@ -435,30 +487,30 @@ export class DataDrivenTestManager {
   } {
     const testDataEntries = this.testDataCache.size;
     const configEntries = this.configCache.size;
-    
+
     // Rough memory usage estimation
     let memoryUsage = 0;
-    this.testDataCache.forEach(data => {
+    this.testDataCache.forEach((data) => {
       memoryUsage += JSON.stringify(data).length;
     });
-    this.configCache.forEach(config => {
+    this.configCache.forEach((config) => {
       memoryUsage += JSON.stringify(config).length;
     });
 
     return {
       testDataEntries,
       configEntries,
-      totalMemoryUsage: `${(memoryUsage / 1024).toFixed(2)} KB`
+      totalMemoryUsage: `${(memoryUsage / 1024).toFixed(2)} KB`,
     };
   }
 
   // Private helper methods
 
   private filterData(data: any[], criteria: Record<string, any>): any[] {
-    return data.filter(record => {
+    return data.filter((record) => {
       return Object.entries(criteria).every(([key, value]) => {
-        if (typeof value === 'string' && value.includes('*')) {
-          const regex = new RegExp(value.replace(/\*/g, '.*'), 'i');
+        if (typeof value === "string" && value.includes("*")) {
+          const regex = new RegExp(value.replace(/\*/g, ".*"), "i");
           return regex.test(record[key]);
         }
         return record[key] === value;
@@ -487,38 +539,40 @@ export class DataDrivenTestManager {
     continueOnFailure: boolean
   ): Promise<any> {
     const startTime = Date.now();
-    
+
     try {
       await testFunction(data, index, source);
-      
+
       return {
         source,
         index,
-        status: 'passed',
+        status: "passed",
         duration: Date.now() - startTime,
-        data
+        data,
       };
-      
     } catch (error) {
-      logger.error(`❌ Test failed for ${source}[${index}]: ${error.message}`);
-      
+      const errorMessage = (error as Error).message;
+      logger.error(`❌ Test failed for ${source}[${index}]: ${errorMessage}`);
+
       if (!continueOnFailure) {
         throw error;
       }
-      
+
       return {
         source,
         index,
-        status: 'failed',
+        status: "failed",
         duration: Date.now() - startTime,
-        error: error.message,
-        data
+        error: errorMessage,
+        data,
       };
     }
   }
 
   private async generateReport(summary: any): Promise<void> {
-    const reportPath = path.resolve('reports/data-driven-execution-report.json');
+    const reportPath = path.resolve(
+      "reports/data-driven-execution-report.json"
+    );
     const reportDir = path.dirname(reportPath);
 
     if (!fs.existsSync(reportDir)) {
@@ -532,10 +586,10 @@ export class DataDrivenTestManager {
         passed: summary.passed,
         failed: summary.failed,
         skipped: summary.skipped,
-        passRate: `${((summary.passed / summary.totalTests) * 100).toFixed(2)}%`
+        passRate: `${((summary.passed / summary.totalTests) * 100).toFixed(2)}%`,
       },
       details: summary.results,
-      cacheStats: this.getCacheStats()
+      cacheStats: this.getCacheStats(),
     };
 
     await this.jsonHandler.writeJSONFile(report, reportPath, { pretty: true });

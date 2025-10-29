@@ -1,6 +1,7 @@
-import { Page, BrowserContext } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
+import { BrowserContext, Page } from 'playwright';
+
 
 /**
  * Screenshot and Video Capture Utility
@@ -13,10 +14,10 @@ export class CaptureUtils {
   private tracesDir: string;
 
   private constructor() {
-    this.screenshotsDir = path.join(process.cwd(), 'reports', 'screenshots');
-    this.videosDir = path.join(process.cwd(), 'reports', 'videos');
-    this.tracesDir = path.join(process.cwd(), 'reports', 'traces');
-    
+    this.screenshotsDir = path.join(process.cwd(), "reports", "screenshots");
+    this.videosDir = path.join(process.cwd(), "reports", "videos");
+    this.tracesDir = path.join(process.cwd(), "reports", "traces");
+
     // Ensure directories exist
     this.ensureDirectories();
   }
@@ -32,7 +33,7 @@ export class CaptureUtils {
    * Ensure capture directories exist
    */
   private ensureDirectories(): void {
-    [this.screenshotsDir, this.videosDir, this.tracesDir].forEach(dir => {
+    [this.screenshotsDir, this.videosDir, this.tracesDir].forEach((dir) => {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
@@ -43,32 +44,32 @@ export class CaptureUtils {
    * Take screenshot with timestamp and scenario name
    */
   async takeScreenshot(
-    page: Page, 
-    scenarioName: string, 
+    page: Page,
+    scenarioName: string,
     stepName?: string,
-    status: 'passed' | 'failed' | 'info' = 'info'
+    status: "passed" | "failed" | "info" = "info"
   ): Promise<string> {
     try {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const cleanScenarioName = this.sanitizeFilename(scenarioName);
-      const cleanStepName = stepName ? this.sanitizeFilename(stepName) : '';
-      
-      const filename = stepName 
+      const cleanStepName = stepName ? this.sanitizeFilename(stepName) : "";
+
+      const filename = stepName
         ? `${status}-${cleanScenarioName}-${cleanStepName}-${timestamp}.png`
         : `${status}-${cleanScenarioName}-${timestamp}.png`;
-      
+
       const filepath = path.join(this.screenshotsDir, filename);
-      
+
       await page.screenshot({
         path: filepath,
         fullPage: true,
-        type: 'png'
+        type: "png",
       });
 
       console.log(`📸 Screenshot captured: ${filename}`);
       return filepath;
     } catch (error) {
-      console.error('Failed to capture screenshot:', error);
+      console.error("Failed to capture screenshot:", error);
       throw error;
     }
   }
@@ -76,9 +77,12 @@ export class CaptureUtils {
   /**
    * Start video recording for a browser context
    */
-  async startVideoRecording(context: BrowserContext, scenarioName: string): Promise<string> {
+  async startVideoRecording(
+    context: BrowserContext,
+    scenarioName: string
+  ): Promise<string> {
     try {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const cleanScenarioName = this.sanitizeFilename(scenarioName);
       const filename = `${cleanScenarioName}-${timestamp}.webm`;
       const videoPath = path.join(this.videosDir, filename);
@@ -88,7 +92,7 @@ export class CaptureUtils {
       console.log(`🎥 Video recording prepared: ${filename}`);
       return videoPath;
     } catch (error) {
-      console.error('Failed to prepare video recording:', error);
+      console.error("Failed to prepare video recording:", error);
       throw error;
     }
   }
@@ -98,7 +102,7 @@ export class CaptureUtils {
    */
   async startTrace(page: Page, scenarioName: string): Promise<string> {
     try {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const cleanScenarioName = this.sanitizeFilename(scenarioName);
       const filename = `${cleanScenarioName}-${timestamp}.zip`;
       const tracePath = path.join(this.tracesDir, filename);
@@ -106,13 +110,13 @@ export class CaptureUtils {
       await page.context().tracing.start({
         screenshots: true,
         snapshots: true,
-        sources: true
+        sources: true,
       });
 
       console.log(`🔍 Trace recording started: ${filename}`);
       return tracePath;
     } catch (error) {
-      console.error('Failed to start trace recording:', error);
+      console.error("Failed to start trace recording:", error);
       throw error;
     }
   }
@@ -125,7 +129,7 @@ export class CaptureUtils {
       await page.context().tracing.stop({ path: tracePath });
       console.log(`🔍 Trace recording saved: ${path.basename(tracePath)}`);
     } catch (error) {
-      console.error('Failed to stop trace recording:', error);
+      console.error("Failed to stop trace recording:", error);
       throw error;
     }
   }
@@ -134,23 +138,30 @@ export class CaptureUtils {
    * Capture step screenshot for reporting
    */
   async captureStepScreenshot(
-    page: Page, 
-    scenarioName: string, 
+    page: Page,
+    scenarioName: string,
     stepName: string,
-    status: 'passed' | 'failed' | 'skipped' = 'passed'
+    status: "passed" | "failed" | "skipped" = "passed"
   ): Promise<string | null> {
     // Only capture on failure or if explicitly requested
-    const shouldCapture = status === 'failed' || 
-                         process.env.SCREENSHOT === 'always' ||
-                         process.env.SCREENSHOT === 'on-failure';
+    const shouldCapture =
+      status === "failed" ||
+      process.env.SCREENSHOT === "always" ||
+      process.env.SCREENSHOT === "on-failure";
 
     if (!shouldCapture) {
       return null;
     }
 
     // Map skipped to info for screenshot naming
-    const screenshotStatus: 'passed' | 'failed' | 'info' = status === 'skipped' ? 'info' : status;
-    return await this.takeScreenshot(page, scenarioName, stepName, screenshotStatus);
+    const screenshotStatus: "passed" | "failed" | "info" =
+      status === "skipped" ? "info" : status;
+    return await this.takeScreenshot(
+      page,
+      scenarioName,
+      stepName,
+      screenshotStatus
+    );
   }
 
   /**
@@ -160,10 +171,13 @@ export class CaptureUtils {
     recordVideo: { dir: string; size?: { width: number; height: number } };
     videoPath: string;
   }> {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const cleanScenarioName = this.sanitizeFilename(scenarioName);
-    const videoDir = path.join(this.videosDir, `${cleanScenarioName}-${timestamp}`);
-    
+    const videoDir = path.join(
+      this.videosDir,
+      `${cleanScenarioName}-${timestamp}`
+    );
+
     // Ensure video directory exists
     if (!fs.existsSync(videoDir)) {
       fs.mkdirSync(videoDir, { recursive: true });
@@ -172,9 +186,9 @@ export class CaptureUtils {
     return {
       recordVideo: {
         dir: videoDir,
-        size: { width: 1280, height: 720 }
+        size: { width: 1280, height: 720 },
       },
-      videoPath: path.join(videoDir, 'video.webm')
+      videoPath: path.join(videoDir, "video.webm"),
     };
   }
 
@@ -185,11 +199,11 @@ export class CaptureUtils {
     try {
       if (fs.existsSync(screenshotPath)) {
         const screenshot = fs.readFileSync(screenshotPath);
-        world.attach(screenshot, 'image/png');
+        world.attach(screenshot, "image/png");
         console.log(`📎 Screenshot attached to Cucumber report`);
       }
     } catch (error) {
-      console.error('Failed to attach screenshot to Cucumber report:', error);
+      console.error("Failed to attach screenshot to Cucumber report:", error);
     }
   }
 
@@ -198,16 +212,16 @@ export class CaptureUtils {
    */
   cleanOldCaptures(olderThanDays: number = 7): void {
     console.log(`🧹 Cleaning captures older than ${olderThanDays} days...`);
-    
-    const cutoffTime = Date.now() - (olderThanDays * 24 * 60 * 60 * 1000);
-    
-    [this.screenshotsDir, this.videosDir, this.tracesDir].forEach(dir => {
+
+    const cutoffTime = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+
+    [this.screenshotsDir, this.videosDir, this.tracesDir].forEach((dir) => {
       if (fs.existsSync(dir)) {
         const files = fs.readdirSync(dir);
-        files.forEach(file => {
+        files.forEach((file) => {
           const filePath = path.join(dir, file);
           const stats = fs.statSync(filePath);
-          
+
           if (stats.mtime.getTime() < cutoffTime) {
             if (stats.isDirectory()) {
               fs.rmSync(filePath, { recursive: true, force: true });
@@ -234,7 +248,7 @@ export class CaptureUtils {
       screenshots: 0,
       videos: 0,
       traces: 0,
-      totalSize: '0 MB'
+      totalSize: "0 MB",
     };
 
     let totalBytes = 0;
@@ -243,7 +257,7 @@ export class CaptureUtils {
     if (fs.existsSync(this.screenshotsDir)) {
       const screenshots = fs.readdirSync(this.screenshotsDir);
       stats.screenshots = screenshots.length;
-      screenshots.forEach(file => {
+      screenshots.forEach((file) => {
         const filePath = path.join(this.screenshotsDir, file);
         totalBytes += fs.statSync(filePath).size;
       });
@@ -253,13 +267,13 @@ export class CaptureUtils {
     if (fs.existsSync(this.videosDir)) {
       const videos = fs.readdirSync(this.videosDir);
       stats.videos = videos.length;
-      videos.forEach(file => {
+      videos.forEach((file) => {
         const filePath = path.join(this.videosDir, file);
         const fileStat = fs.statSync(filePath);
         if (fileStat.isDirectory()) {
           // Video directories
           const videoFiles = fs.readdirSync(filePath);
-          videoFiles.forEach(videoFile => {
+          videoFiles.forEach((videoFile) => {
             totalBytes += fs.statSync(path.join(filePath, videoFile)).size;
           });
         } else {
@@ -272,7 +286,7 @@ export class CaptureUtils {
     if (fs.existsSync(this.tracesDir)) {
       const traces = fs.readdirSync(this.tracesDir);
       stats.traces = traces.length;
-      traces.forEach(file => {
+      traces.forEach((file) => {
         const filePath = path.join(this.tracesDir, file);
         totalBytes += fs.statSync(filePath).size;
       });
@@ -289,8 +303,8 @@ export class CaptureUtils {
    */
   private sanitizeFilename(filename: string): string {
     return filename
-      .replace(/[^a-z0-9\-_\s]/gi, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9\-_\s]/gi, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
       .toLowerCase()
       .substring(0, 100); // Limit length
   }

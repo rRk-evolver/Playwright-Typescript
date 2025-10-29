@@ -21,28 +21,28 @@ export class Logger {
 
   debug(message: string, ...args: any[]): void {
     if (this.logLevel <= LogLevel.DEBUG) {
-      this.log('DEBUG', message, args);
+      this.log("DEBUG", message, args);
     }
   }
 
   info(message: string, ...args: any[]): void {
     if (this.logLevel <= LogLevel.INFO) {
-      this.log('INFO', message, args);
+      this.log("INFO", message, args);
     }
   }
 
   warn(message: string, ...args: any[]): void {
     if (this.logLevel <= LogLevel.WARN) {
-      this.log('WARN', message, args);
+      this.log("WARN", message, args);
     }
   }
 
   error(message: string, error?: any, ...args: any[]): void {
     if (this.logLevel <= LogLevel.ERROR) {
       if (error) {
-        this.log('ERROR', message, [error, ...args]);
+        this.log("ERROR", message, [error, ...args]);
       } else {
-        this.log('ERROR', message, args);
+        this.log("ERROR", message, args);
       }
     }
   }
@@ -50,7 +50,7 @@ export class Logger {
   private log(level: string, message: string, args: any[]): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level}]`;
-    
+
     if (args.length > 0) {
       console.log(`${prefix} ${message}`, ...args);
     } else {

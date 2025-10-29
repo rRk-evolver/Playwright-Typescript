@@ -1,5 +1,7 @@
-import { Page, BrowserContext } from '@playwright/test';
+import { BrowserContext, Page } from '@playwright/test';
+
 import { BasePage } from './base-page';
+
 
 /**
  * Dashboard Page Object
@@ -7,23 +9,26 @@ import { BasePage } from './base-page';
  */
 export class DashboardPage extends BasePage {
   // Page URL
-  private readonly url = '/dashboard';
+  private readonly url = "/dashboard";
 
   // Locators
   private readonly selectors = {
-    welcomeMessage: '.welcome-message, [data-testid="welcome"], h1:has-text("Welcome")',
+    welcomeMessage:
+      '.welcome-message, [data-testid="welcome"], h1:has-text("Welcome")',
     userProfile: '.user-profile, [data-testid="user-profile"]',
     navigationMenu: '.nav-menu, [data-testid="navigation"]',
-    logoutButton: '.logout-btn, [data-testid="logout"], button:has-text("Logout")',
+    logoutButton:
+      '.logout-btn, [data-testid="logout"], button:has-text("Logout")',
     dashboardTitle: 'h1, .page-title, [data-testid="page-title"]',
     notificationBell: '.notification-bell, [data-testid="notifications"]',
-    searchBox: '.search-box, [data-testid="search"], input[placeholder*="Search"]',
+    searchBox:
+      '.search-box, [data-testid="search"], input[placeholder*="Search"]',
     mainContent: '.main-content, [data-testid="main-content"], main',
     sidebar: '.sidebar, [data-testid="sidebar"]',
     breadcrumb: '.breadcrumb, [data-testid="breadcrumb"]',
     quickActions: '.quick-actions, [data-testid="quick-actions"]',
     statisticsWidgets: '.stats-widget, [data-testid="stats-widget"]',
-    recentActivity: '.recent-activity, [data-testid="recent-activity"]'
+    recentActivity: '.recent-activity, [data-testid="recent-activity"]',
   };
 
   constructor(page: Page, context: BrowserContext) {
@@ -79,7 +84,7 @@ export class DashboardPage extends BasePage {
    */
   async search(searchTerm: string): Promise<void> {
     await this.type(this.selectors.searchBox, searchTerm, { clear: true });
-    await this.page.keyboard.press('Enter');
+    await this.page.keyboard.press("Enter");
   }
 
   /**
@@ -123,13 +128,20 @@ export class DashboardPage extends BasePage {
    * Get statistics from widgets
    */
   async getStatistics(): Promise<Array<{ title: string; value: string }>> {
-    const widgets = await this.page.locator(this.selectors.statisticsWidgets).all();
+    const widgets = await this.page
+      .locator(this.selectors.statisticsWidgets)
+      .all();
     const stats: Array<{ title: string; value: string }> = [];
 
     for (const widget of widgets) {
       try {
-        const title = await widget.locator('.title, .stat-title, h3, h4').textContent() || '';
-        const value = await widget.locator('.value, .stat-value, .number').textContent() || '';
+        const title =
+          (await widget.locator(".title, .stat-title, h3, h4").textContent()) ||
+          "";
+        const value =
+          (await widget
+            .locator(".value, .stat-value, .number")
+            .textContent()) || "";
         stats.push({ title: title.trim(), value: value.trim() });
       } catch (error) {
         // Skip widgets that don't have the expected structure
@@ -144,7 +156,11 @@ export class DashboardPage extends BasePage {
    * Get recent activity items
    */
   async getRecentActivity(): Promise<string[]> {
-    const activities = await this.page.locator(`${this.selectors.recentActivity} li, ${this.selectors.recentActivity} .activity-item`).all();
+    const activities = await this.page
+      .locator(
+        `${this.selectors.recentActivity} li, ${this.selectors.recentActivity} .activity-item`
+      )
+      .all();
     const activityTexts: string[] = [];
 
     for (const activity of activities) {
@@ -172,12 +188,12 @@ export class DashboardPage extends BasePage {
   async verifyPageElements(): Promise<void> {
     await this.verifyElementVisible(this.selectors.dashboardTitle);
     await this.verifyElementVisible(this.selectors.mainContent);
-    
+
     // Optional elements (may not be present on all dashboards)
     const optionalElements = [
       this.selectors.navigationMenu,
       this.selectors.userProfile,
-      this.selectors.searchBox
+      this.selectors.searchBox,
     ];
 
     for (const selector of optionalElements) {
@@ -195,28 +211,35 @@ export class DashboardPage extends BasePage {
     // Wait for main elements to be visible
     await this.waitForElement(this.selectors.dashboardTitle);
     await this.waitForElement(this.selectors.mainContent);
-    
+
     // Wait for any loading spinners to disappear
     try {
-      await this.page.waitForSelector('.loading, .spinner', { state: 'hidden', timeout: 5000 });
+      await this.page.waitForSelector(".loading, .spinner", {
+        state: "hidden",
+        timeout: 5000,
+      });
     } catch {
       // Loading spinner might not exist, continue
     }
-    
+
     // Wait for network to be idle
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
    * Get breadcrumb navigation
    */
   async getBreadcrumb(): Promise<string[]> {
-    const breadcrumbItems = await this.page.locator(`${this.selectors.breadcrumb} a, ${this.selectors.breadcrumb} span`).all();
+    const breadcrumbItems = await this.page
+      .locator(
+        `${this.selectors.breadcrumb} a, ${this.selectors.breadcrumb} span`
+      )
+      .all();
     const breadcrumbTexts: string[] = [];
 
     for (const item of breadcrumbItems) {
       const text = await item.textContent();
-      if (text && text.trim() !== '>') {
+      if (text && text.trim() !== ">") {
         breadcrumbTexts.push(text.trim());
       }
     }
@@ -229,12 +252,13 @@ export class DashboardPage extends BasePage {
    */
   async isSidebarExpanded(): Promise<boolean> {
     const sidebar = this.page.locator(this.selectors.sidebar);
-    
+
     // Check for common expanded state indicators
-    const hasExpandedClass = await sidebar.evaluate(el => 
-      el.classList.contains('expanded') || 
-      el.classList.contains('open') || 
-      !el.classList.contains('collapsed')
+    const hasExpandedClass = await sidebar.evaluate(
+      (el) =>
+        el.classList.contains("expanded") ||
+        el.classList.contains("open") ||
+        !el.classList.contains("collapsed")
     );
 
     // Also check width as a fallback
@@ -248,12 +272,13 @@ export class DashboardPage extends BasePage {
    * Toggle sidebar
    */
   async toggleSidebar(): Promise<void> {
-    const toggleButton = '.sidebar-toggle, .menu-toggle, [data-testid="sidebar-toggle"]';
+    const toggleButton =
+      '.sidebar-toggle, .menu-toggle, [data-testid="sidebar-toggle"]';
     if (await this.isVisible(toggleButton)) {
       await this.click(toggleButton);
     } else {
       // Try clicking on hamburger menu or similar
-      const hamburgerMenu = '.hamburger, .menu-icon, ☰';
+      const hamburgerMenu = ".hamburger, .menu-icon, ☰";
       await this.click(hamburgerMenu);
     }
   }
@@ -266,11 +291,15 @@ export class DashboardPage extends BasePage {
     for (const element of expectedElements) {
       const isVisible = await this.isVisible(element, 3000);
       if (!isVisible) {
-        throw new Error(`Expected element not found for user access: ${element}`);
+        throw new Error(
+          `Expected element not found for user access: ${element}`
+        );
       }
     }
-    
-    logger.info(`Verified user has access to ${expectedElements.length} expected elements`);
+
+    logger.info(
+      `Verified user has access to ${expectedElements.length} expected elements`
+    );
   }
 
   /**
@@ -282,18 +311,20 @@ export class DashboardPage extends BasePage {
     networkRequests: number;
   }> {
     const performanceMetrics = await this.page.evaluate(() => {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navigation = performance.getEntriesByType(
+        "navigation"
+      )[0] as PerformanceNavigationTiming;
       const loadTime = navigation.loadEventEnd - navigation.loadEventStart;
-      const domElements = document.querySelectorAll('*').length;
-      
+      const domElements = document.querySelectorAll("*").length;
+
       return {
         loadTime: Math.round(loadTime),
         domElements,
-        networkRequests: performance.getEntriesByType('resource').length
+        networkRequests: performance.getEntriesByType("resource").length,
       };
     });
 
-    logger.info('Dashboard performance metrics:', performanceMetrics);
+    logger.info("Dashboard performance metrics:", performanceMetrics);
     return performanceMetrics;
   }
 

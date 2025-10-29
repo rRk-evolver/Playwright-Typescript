@@ -22,7 +22,10 @@
         "NODE_ENV": "development",
         "DEBUG": "playwright:*"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -49,7 +52,10 @@
         "DEBUG": "playwright:*",
         "PWDEBUG": "1"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -76,7 +82,10 @@
         "DEBUG": "playwright:*",
         "PWDEBUG": "1"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -103,7 +112,10 @@
         "DEBUG": "playwright:*",
         "PWDEBUG": "1"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -130,7 +142,10 @@
         "DEBUG": "playwright:*",
         "PWDEBUG": "1"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -157,7 +172,10 @@
         "DEBUG": "playwright:*",
         "PWDEBUG": "1"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -178,7 +196,10 @@
       "env": {
         "NODE_ENV": "test"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -194,7 +215,10 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -209,7 +233,10 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
     },
@@ -227,10 +254,7 @@
   "compounds": [
     {
       "name": "Debug All Browsers",
-      "configurations": [
-        "Debug Test - Chrome",
-        "Debug Test - Firefox"
-      ],
+      "configurations": ["Debug Test - Chrome", "Debug Test - Firefox"],
       "stopAll": true
     }
   ]

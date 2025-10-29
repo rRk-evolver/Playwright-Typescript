@@ -39,14 +39,9 @@
       "@fixtures/*": ["tests/fixtures/*"]
     },
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "types": ["node", "chai", "mocha"]
+    "types": ["node", "chai"]
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*",
-    "features/**/*",
-    "global.d.ts"
-  ],
+  "include": ["src/**/*", "tests/**/*", "features/**/*", "global.d.ts"],
   "exclude": [
     "node_modules",
     "dist",

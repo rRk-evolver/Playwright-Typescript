@@ -33,7 +33,7 @@
     },
     {
       "searchTerm": "smartphone",
-      "category": "electronics", 
+      "category": "electronics",
       "expectedResults": 15,
       "minPrice": 200,
       "maxPrice": 1500,
@@ -59,7 +59,7 @@
       "isDefault": true
     },
     {
-      "paymentMethod": "debitCard", 
+      "paymentMethod": "debitCard",
       "cardNumber": "4532111111111111",
       "cardHolder": "Jane Smith",
       "expiryMonth": "06",
